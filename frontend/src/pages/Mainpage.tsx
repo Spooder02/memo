@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import Calendar from "../components/Calendar";
 
 const Mainpage = () => {
     return (
@@ -9,6 +10,7 @@ const Mainpage = () => {
             <Description>
                 2개의 일정이 매치되었습니다!
             </Description>
+            <Calendar/>
         </PageFrame>
     )
 }
