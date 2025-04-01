@@ -16,7 +16,7 @@ const Frame = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 3em;
+    width: 2.75em;
     height: 3em;
 `;
 

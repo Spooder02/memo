@@ -91,8 +91,10 @@ const CalendarFrame = styled.div`
 `;
 
 const Frame = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 90vw;
-    height: 40vh;
     padding: 1em 0 1em 0;
     margin: auto;
 `;

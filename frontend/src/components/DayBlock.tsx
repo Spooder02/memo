@@ -25,7 +25,7 @@ const Frame = styled.div<{today: boolean}>`
     display: grid;
     justify-content: center;
     padding: 0.2em;
-    width: 3em;
+    width: 2.75em;
     height: 3em;
     border-radius: 0.25em;
 
