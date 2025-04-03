@@ -1,7 +1,19 @@
 import styled from "styled-components";
 import Calendar from "../components/Calendar";
+import { useState } from "react";
+import { CurrentDate } from "../types/DateFormat";
 
 const Mainpage = () => {
+    // 오늘의 년, 월
+    const todayMonth = new Date().getMonth();
+    const todayYear = new Date().getFullYear();
+    
+    const [currentDate, setCurrentDate] = useState<CurrentDate>({
+        year: todayYear,
+        month: todayMonth,
+    });
+    
+
     return (
         <PageFrame>
             <Title>
@@ -10,7 +22,10 @@ const Mainpage = () => {
             <Description>
                 2개의 일정이 매치되었습니다!
             </Description>
-            <Calendar/>
+            <Calendar
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+            />
         </PageFrame>
     )
 }

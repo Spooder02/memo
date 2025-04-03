@@ -2,38 +2,33 @@ import styled from "styled-components";
 import DayBlock from "./DayBlock";
 import DateBlock from "./DateBlock";
 import arrow from "../assets/playbutton.png"
-import { useState } from "react";
+import { CalendarProps } from "../types/DateFormat";
 
-const Calendar = () => {
+const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
     // 오늘의 년, 월
     const todayMonth = new Date().getMonth();
     const todayYear = new Date().getFullYear();
 
-    // 현재 가리키는 년. 월
-    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-
     // 캘린더 출력을 위한 변수
-    const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
-    const totalDays = daysInMonth(currentMonth, currentYear);
+    const firstDay = getFirstDayOfMonth(currentDate.month, currentDate.year);
+    const totalDays = daysInMonth(currentDate.month, currentDate.year);
     const currentDay = new Date().getDay();
 
     const changeMonth = (add: boolean) => {
-        if (add) { // 더할 때
-            if (currentMonth >= 11) { // 12월이라면
-                setCurrentYear(prev => prev + 1);
-                setCurrentMonth(1);
-            } else {
-                setCurrentMonth(prev => prev + 1);
+        setCurrentDate(prev => {
+            const newMonth = add ? prev.month + 1 : prev.month - 1;
+            let newYear = prev.year;
+
+            if (newMonth > 11) { // 12월 넘어갈 때
+                newYear += 1;
+                return { year: newYear, month: 0 }; // 1월로 돌아감
+            } else if (newMonth < 0) { // 1월 이전으로 갈 때
+                newYear -= 1;
+                return { year: newYear, month: 11 }; // 12월로 돌아감
             }
-        } else { // 뺄 떄
-            if (currentMonth <= 0) { // 1월이라면
-                setCurrentYear(prev => prev - 1); // 년도를 옮기고
-                setCurrentMonth(11); // 12월부터 다시 돌아가도록
-            } else {
-                setCurrentMonth(prev => prev - 1);
-            }
-        }
+
+            return { year: newYear, month: newMonth };
+        });
     }
 
     const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1);
@@ -45,7 +40,7 @@ const Calendar = () => {
                     right={false}
                     onClick={() => changeMonth(false)}
                 />
-                    {currentYear}년 {currentMonth+1}월
+                    {currentDate.year}년 {currentDate.month+1}월
                 <ChangeDateButton
                     right={true}
                     onClick={() => changeMonth(true)}
@@ -64,10 +59,11 @@ const Calendar = () => {
                 {   
                     daysArray.map((date) => (
                         <DayBlock
+                            key={date}
                             date={date}
                             today={(
-                                todayYear == currentYear &&
-                                todayMonth == currentMonth && currentDay-1 == date)? true: false}
+                                todayYear == currentDate.year &&
+                                todayMonth == currentDate.month && currentDay-1 == date)}
                         />
                     ))
                 }
