@@ -12,7 +12,7 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
     // 캘린더 출력을 위한 변수
     const firstDay = getFirstDayOfMonth(currentDate.month, currentDate.year);
     const totalDays = daysInMonth(currentDate.month, currentDate.year);
-    const currentDay = new Date().getDay();
+    const currentDay = new Date().getDate();
 
     const changeMonth = (add: boolean) => {
         setCurrentDate(prev => {
@@ -63,7 +63,7 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
                             date={date}
                             today={(
                                 todayYear == currentDate.year &&
-                                todayMonth == currentDate.month && currentDay-1 == date)}
+                                todayMonth == currentDate.month && currentDay == date)}
                         />
                     ))
                 }
