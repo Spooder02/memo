@@ -1,10 +1,10 @@
 import styled from "styled-components";
 import DayBlock from "./DayBlock";
-import DateBlock from "./DateBlock";
 import arrow from "../assets/playbutton.png"
 import { CalendarProps } from "../types/DateFormat";
 import { SimplePlan } from "../types/PlanFormat";
 import simplePlansData from "../assets/SimplePlans.json";
+import DateBlocks from "./DateBlocks";
 
 const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
     const planData: SimplePlan[] = simplePlansData;
@@ -61,11 +61,7 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
                 />
             </MonthTitle>
             <CalendarFrame>
-                {
-                    Array.from({ length: 7 }, (_, index) => (
-                        <DateBlock key={index} index={index} />
-                    ))
-                }
+                <DateBlocks/>
                 {
                     emptyDays.map((_, index) => (
                         <div key={`empty-${index}`} className="day empty"></div>

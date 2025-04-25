@@ -1,31 +1,42 @@
 import styled from "styled-components"
 import logo from "../assets/memo.png";
 import HamburgerMenu from "./HamburgerMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [isOpen, setIsOpen] = useState(false);
     const invertStatus = () => {
         setIsOpen((prev) => !prev)
     };
 
+    useEffect(() => {
+        setIsOpen(false);
+    }, [location.pathname]);
+
     return (
         <>
         <Header>
-            <Logo src={logo}/>
+            <Logo src={logo} onClick={() => navigate('/')}/>
             <HamburgerMenu
                 isOpen={isOpen}
                 onClick={invertStatus}
             />
         </Header>
-        <HideContainer isOpen={isOpen}/>
+        <HideContainer isOpen={isOpen} onClick={invertStatus}/>
         <SideMenuContainer isOpen={isOpen}>
             <MenuContainer>
-                <MenuTitle>메인 메뉴</MenuTitle>
-                <MenuTitle>나의 팀</MenuTitle>
-                <MenuTitle>일정 등록</MenuTitle>
-                <MenuTitle>프로필</MenuTitle>
+                <MenuTitle to={"/"}>
+                    메인 메뉴
+                </MenuTitle>
+                <MenuTitle to={"/myteam"}>나의 팀</MenuTitle>
+                <MenuTitle to={"/registerplan"}>
+                        일정 등록
+                </MenuTitle>
+                <MenuTitle to={"/profile"}>프로필</MenuTitle>
             </MenuContainer>
         </SideMenuContainer>
         </>
@@ -57,6 +68,7 @@ const HideContainer = styled.div<{isOpen: boolean}>`
     display: ${(props) => props.isOpen? 'block': 'none'};
     background-color: #000000;
     opacity: 0.2;
+    z-index: 5;
 `;
 
 const SideMenuContainer = styled.div<{isOpen: boolean}>`
@@ -79,7 +91,7 @@ const MenuContainer = styled.div`
 `;
 
 
-const MenuTitle = styled.a`
+const MenuTitle = styled(Link)`
     display: block;
     font-weight: 500;
     font-size: 16pt;

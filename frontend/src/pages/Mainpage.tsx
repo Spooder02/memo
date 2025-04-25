@@ -186,7 +186,6 @@ const PlanText = styled.p`
 
 const PageFrame = styled.div`
     position: relative;
-    padding: 0.5em 1em 0.5em 1em;
     height: calc(100vh - 5em);
     overflow: hidden;
 `;
