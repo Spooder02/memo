@@ -171,7 +171,7 @@ const Description = styled.p`
     font-weight: 400;
 `;
 
-const DropdownText = styled.span`
+export const DropdownText = styled.span`
     display: flex;
     align-items: center;
     font-size: 10pt;
@@ -190,7 +190,7 @@ const PageFrame = styled.div`
     overflow: hidden;
 `;
 
-const GrayLineDiv = styled.div`
+export const GrayLineDiv = styled.div`
     width: 100%; 
     height: 1px;
     background-color: #DCDCDC;
@@ -221,7 +221,7 @@ const UpcomingPlanContainer = styled.div`
     overflow: hideen;
 `;
 
-const DropdownButtonImage = styled.img<{isOpen: boolean}>`
+export const DropdownButtonImage = styled.img<{isOpen: boolean}>`
     height: 0.75em;
     margin: 0 0 0 0.15em;
     transform: rotate(${(props) => (props.isOpen ? '180deg' : '0')});

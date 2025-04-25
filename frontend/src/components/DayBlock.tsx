@@ -1,15 +1,16 @@
 import styled from "styled-components";
 
 const DayBlock = (props: {
-    date: number,
-    today: boolean,
-    color: string | undefined
+    date: number;
+    today: boolean;
+    color: string | undefined;
+    onClick?: () => void;
 }) => {
     const today = props.today;
     const color = props.color;
 
     return (
-        <Frame today={today}>
+        <Frame today={today} onClick={props.onClick}>
             <DateNum today={today}>
                 {props.date}
             </DateNum>
@@ -21,7 +22,7 @@ const DayBlock = (props: {
     )
 }
 
-const Frame = styled.div<{today: boolean}>`
+const Frame = styled.button<{today: boolean}>`
     display: grid;
     justify-content: center;
     padding: 0.2em;
