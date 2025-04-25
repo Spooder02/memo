@@ -3,10 +3,10 @@ import styled from "styled-components";
 const DayBlock = (props: {
     date: number,
     today: boolean,
-    details?: string[]
+    color: string | undefined
 }) => {
     const today = props.today;
-    const details = props.details;
+    const color = props.color;
 
     return (
         <Frame today={today}>
@@ -14,8 +14,8 @@ const DayBlock = (props: {
                 {props.date}
             </DateNum>
             {
-                details?
-                <DetailCircle today={today}/>:<></>
+                color?
+                <DetailCircle color={props.color!}/>:<></>
             }
         </Frame>
     )
@@ -36,11 +36,11 @@ const DateNum = styled.p<{today: boolean}>`
     color: ${(props) => props.today? '#ffffff':'#000000'};
 `;
 
-const DetailCircle = styled.div<{today: boolean}>`
+const DetailCircle = styled.div<{color: string}>`
     width: 6px;
     height: 6px;
     border-radius: 3px;
-    background-color: ${(props) => props.today? '#ffffff':'#000000'};
+    background-color: ${(props) => props.color};
     z-index: 1;
     margin: auto;
 `;

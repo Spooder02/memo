@@ -3,8 +3,12 @@ import DayBlock from "./DayBlock";
 import DateBlock from "./DateBlock";
 import arrow from "../assets/playbutton.png"
 import { CalendarProps } from "../types/DateFormat";
+import { SimplePlan } from "../types/PlanFormat";
+import simplePlansData from "../assets/SimplePlans.json";
 
 const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
+    const planData: SimplePlan[] = simplePlansData;
+
     // 오늘의 년, 월
     const todayMonth = new Date().getMonth();
     const todayYear = new Date().getFullYear();
@@ -13,6 +17,16 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
     const firstDay = getFirstDayOfMonth(currentDate.month, currentDate.year);
     const totalDays = daysInMonth(currentDate.month, currentDate.year);
     const currentDay = new Date().getDate();
+
+    const isSameDate = (comparedDate: string, currentDay: number): boolean => {
+        const scheduleDate = new Date(comparedDate);
+        return (
+          scheduleDate.getFullYear() === currentDate.year &&
+          scheduleDate.getMonth() === currentDate.month &&
+          scheduleDate.getDate() === currentDay
+        );
+      }
+      
 
     const changeMonth = (add: boolean) => {
         setCurrentDate(prev => {
@@ -57,15 +71,22 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
                         <div key={`empty-${index}`} className="day empty"></div>
                     ))}
                 {   
-                    daysArray.map((date) => (
-                        <DayBlock
-                            key={date}
-                            date={date}
-                            today={(
-                                todayYear == currentDate.year &&
-                                todayMonth == currentDate.month && currentDay == date).valueOf()}
-                        />
-                    ))
+                    daysArray.map((date) => {
+                        const planForDay = planData.find(p =>
+                            isSameDate(p.dayLeft, date)
+                        );
+
+                        return (
+                            <DayBlock
+                                key={date}
+                                date={date}
+                                today={(
+                                    todayYear == currentDate.year &&
+                                    todayMonth == currentDate.month && currentDay == date).valueOf()}
+                                color={planForDay? planForDay.color : undefined}
+                            />
+                        )
+                    })
                 }
             </CalendarFrame>
         </Frame>
