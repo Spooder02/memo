@@ -25,6 +25,14 @@
     },
     {
         "id": 4,
+        "teamName": "온라인팀",
+        "meetingName": "온라인 전략 회의",
+        "dayLeft": "2025-04-25T10:00:00Z",
+        "color": "#B5DBFF",
+        "teamScale": 3
+    },
+    {
+        "id": 5,
         "teamName": "인사팀",
         "meetingName": "연봉 협상",
         "dayLeft": "2025-05-01T11:00:00Z",

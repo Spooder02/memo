@@ -46,7 +46,18 @@ const Mainpage = () => {
     const getDday = (timeLeft: string) => {
         return (new Date(timeLeft).getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
     }
+
+    const [leftPlans, setLeftPlans] = useState(0);
    
+    useEffect(() => {
+        setLeftPlans(0);
+        planData.forEach((p) => {
+            if (new Date(p.dayLeft) > new Date()) {
+                setLeftPlans(prev => prev+1);
+            } 
+        })
+    }, [])
+
     // 일정 필터 로직
     const filters = ["최신순", "미래순", "인원 많은순"];
     const [selectedFilter, setselectedFilter] = useState<string>(filters[0]);
@@ -95,7 +106,7 @@ const Mainpage = () => {
                     안녕하세요, 미모님!
                 </Title>
                 <Description> 
-                    2개의 일정이 매치되었습니다!
+                    {leftPlans}개의 일정이 매치되었습니다!
                 </Description>
                 <Calendar
                     currentDate={currentDate}
