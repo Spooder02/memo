@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "teamName": "개발팀",
+        "meetingName": "주간 회의",
+        "dayLeft": "2025-04-15T10:00:00Z",
+        "color": "#B5DBFF",
+        "teamScale": 5
+    },
+    {
+        "id": 2,
+        "teamName": "디자인팀",
+        "meetingName": "프로젝트 브리핑",
+        "dayLeft": "2025-04-20T14:00:00Z",
+        "color": "#B5FFC8",
+        "teamScale": 2
+    },
+    {
+        "id": 3,
+        "teamName": "마케팅팀",
+        "meetingName": "캠페인 전략 회의",
+        "dayLeft": "2025-04-25T09:00:00Z",
+        "color": "#FFC1CC",
+        "teamScale": 3
+    },
+    {
+        "id": 4,
+        "teamName": "인사팀",
+        "meetingName": "연봉 협상",
+        "dayLeft": "2025-05-01T11:00:00Z",
+        "color": "#FFF5BA",
+        "teamScale": 6
+    },
+    {
+        "id": 5,
+        "teamName": "운영팀",
+        "meetingName": "월간 보고서",
+        "dayLeft": "2025-05-10T16:00:00Z",
+        "color": "#E6D0FF",
+        "teamScale": 4
+    }
+]

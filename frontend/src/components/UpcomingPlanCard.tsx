@@ -1,32 +1,45 @@
 import styled from "styled-components"
 import groupedimage from "../assets/user_icon_007.png";
+import { SimplePlan } from "../types/PlanFormat";
 
-const UpcomingPlanCard = () => {
+const UpcomingPlanCard = (props: {
+    plan: SimplePlan
+    dday: number
+}) => {
+
+    const data: SimplePlan = props.plan;
+    const backgroundColor = props.plan.color;
 
     return (
-        <CardContainer>
+        <CardContainer
+            key={props.plan.id}
+            color={backgroundColor}
+        >
             <SpaceAroundContainer>
                 <div style={{"display": "flex"}}>
                 <GroupImage src={groupedimage}/>
                 <TextContainer>
-                    <TeamName>언젠간만날팀이름</TeamName>
-                    <MeetingName>미팅이름~</MeetingName>
+                    <TeamName>{data.teamName}</TeamName>
+                    <MeetingName>{data.meetingName}</MeetingName>
                 </TextContainer>
                 </div>
                 <TextContainer>
-                    <DayCount>D-DAY</DayCount>
+                    <DayCount>
+                       {(Math.floor(props.dday) > 0)? `D-${Math.floor(props.dday)}`: `D-DAY`}
+                    </DayCount>
                 </TextContainer>
             </SpaceAroundContainer>
         </CardContainer>
     )
 }
 
-const CardContainer = styled.div`
+const CardContainer = styled.div<{color: string}>`
     display: flex;
     align-items: center;
     width: 100%;
     height: 4em;
-    background-color:rgba(50, 156, 255, 0.4);
+    padding: 0.5em 0 0.5em 0;
+    background-color: ${(props) => props.color};
     border-radius: 0.5em;
 `;
 

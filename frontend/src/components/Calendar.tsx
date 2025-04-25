@@ -63,7 +63,7 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
                             date={date}
                             today={(
                                 todayYear == currentDate.year &&
-                                todayMonth == currentDate.month && currentDay == date)}
+                                todayMonth == currentDate.month && currentDay == date).valueOf()}
                         />
                     ))
                 }
