@@ -9,8 +9,12 @@ import { SmallDropdown } from '../components/SmallDropdown';
 
 const RegisterPlan: React.FC = () => {
 
+    // 12시간 크기의 숫자 배열 (분단위)
     const allTheTimes = Array.from({ length: 48 }, (_, index) => index * 15);
+    // 선택된 시간 처리를 위한 동적 배열
+    const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
 
+    // display 및 내부 처리를 위한 시간 포맷팅 (90 -> 1:30)
     const formatTime = (totalMinutes: number) => {
         if (totalMinutes == 0)
             return '12:00';
@@ -138,9 +142,18 @@ const RegisterPlan: React.FC = () => {
                     const formattedTime = formatTime(time);
                     return (
                         <TimeSelectionButton
+                            setIsSelection={() => {
+                                if (selectedTimes.includes(time)) {
+                                    setSelectedTimes(selectedTimes.filter(t => t !== time));
+                                } else {
+                                    setSelectedTimes([...selectedTimes, time]);
+                                }
+                                }
+                            }
                             key={formattedTime}
                             time={formattedTime}
-                            isSelection={false}
+                            rawTime={time}
+                            isSelection={selectedTimes.includes(time)}
                         />
                     )
                 })
