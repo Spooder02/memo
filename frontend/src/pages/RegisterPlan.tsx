@@ -2,10 +2,24 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import DateBlocks from '../components/DateBlocks';
 import DayBlock from '../components/DayBlock';
-import { DropdownButtonImage, DropdownText, GrayLineDiv } from './Mainpage';
+import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
 import DropdownButton from "../assets/drop-down-arrow (1).png";
+import TimeSelectionButton from '../components/TimeSelectionButton';
+import { SmallDropdown } from '../components/SmallDropdown';
 
 const RegisterPlan: React.FC = () => {
+
+    const allTheTimes = Array.from({ length: 48 }, (_, index) => index * 15);
+
+    const formatTime = (totalMinutes: number) => {
+        if (totalMinutes == 0)
+            return '12:00';
+        
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60 == 0? '00':  totalMinutes % 60;
+
+        return `${hours}:${minutes}`;
+    };
 
     const getThisWeekDates = () => {
         const today = new Date();
@@ -19,7 +33,6 @@ const RegisterPlan: React.FC = () => {
         });
     }
 
-
     const [weekDates, setWeekDates] = useState<number[]>([]);
 
     useEffect(() => {
@@ -30,7 +43,7 @@ const RegisterPlan: React.FC = () => {
 
     // 오전 및 오후 구분 필터
     const timeDivFilter = ["오전", "오후"];
-    const [selectTimeDivFilter, setSelectedTimeDivFilter] = useState<string>(timeDivFilter[0]);
+    const [selectedTimeDivFilter, setSelectedTimeDivFilter] = useState<string>(timeDivFilter[0]);
 
     const [timeDivDropdownOpen, setTimeDivFilterDropdownOpen] = useState(false);
 
@@ -40,12 +53,23 @@ const RegisterPlan: React.FC = () => {
 
     // 시간 간격 구분 필터
     const timeFilters = ["15분마다", "30분마다", "1시간마다"];
-    const [selectTimeFilter, setSelectedTimeFilter] = useState<string>(timeFilters[1]);
+    const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>(timeFilters[1]);
     const [timeFilterDropdownOpen, setTimeFilterDropdownOpen] = useState(false);
 
     const toggleTimeFilterDropdown = () => {
         setTimeFilterDropdownOpen((prev) => !prev);
     };
+
+    useEffect(() => {
+        // 상태 업데이트마다 드롭다운 닫기
+        setTimeFilterDropdownOpen(false);
+        setTimeDivFilterDropdownOpen(false);
+
+        // 디버깅 로그
+        console.log("Selected Date: ", selectedDates);
+        console.log("Selected Time Div Filter: ", selectedTimeDivFilter);
+        console.log("Selected Time Filter: ", selectedTimeFilter);
+    }, [selectedDates, selectedTimeDivFilter, selectedTimeFilter]);
 
     return (
         <>
@@ -68,25 +92,61 @@ const RegisterPlan: React.FC = () => {
             }
         </WeekCalendarContainer>
         <TimeDivContainer>
-            <TimeDivTitle>
-                {selectTimeDivFilter}
-                <DropdownButtonImage
-                    src={DropdownButton}
+            <DropdownContainer>
+                <TimeDivTitle>
+                    {selectedTimeDivFilter}
+                    <DropdownButtonImage
+                        src={DropdownButton}
+                        isOpen={timeDivDropdownOpen}
+                        onClick={toggleTimeDivDropdown}
+                    />
+                </TimeDivTitle>
+                <SmallDropdown
+                    arr={timeDivFilter}
                     isOpen={timeDivDropdownOpen}
-                    onClick={toggleTimeDivDropdown}
+                    clickEvent={setSelectedTimeDivFilter}
                 />
-            </TimeDivTitle>
-            <DropdownText>
-                {selectTimeFilter}
+            </DropdownContainer>
+            <DropdownContainer>
+                <DropdownText>
+                {selectedTimeFilter}
                 <DropdownButtonImage
                     src={DropdownButton}
                     isOpen={timeFilterDropdownOpen}
                     onClick={toggleTimeFilterDropdown}
                 />
-            </DropdownText>
+                </DropdownText>
+                <SmallDropdown
+                arr={timeFilters}
+                isOpen={timeFilterDropdownOpen}
+                clickEvent={setSelectedTimeFilter}
+                />
+            </DropdownContainer>
+            
+            
         </TimeDivContainer>
         <GrayLineDiv/>
-        
+        <TimeSelectionTable selectedGap={30}>
+            {
+                allTheTimes.map((time) => {
+
+                    // 30분마다로 설정되어 있으면, 30으로 나누어지지 않는 15분은 제외
+                    if (selectedTimeFilter == "30분마다" && time % 30 != 0) return null;
+
+                    if (selectedTimeFilter == "1시간마다" && time % 60 != 0) return null;
+
+                    const formattedTime = formatTime(time);
+                    return (
+                        <TimeSelectionButton
+                            key={formattedTime}
+                            time={formattedTime}
+                            isSelection={false}
+                        />
+                    )
+                })
+            }
+        </TimeSelectionTable>
+       
         </>
     )
 };
@@ -119,5 +179,18 @@ const TimeDivTitle = styled.p`
     font-weight: 600;
     margin: 0;
 `;
+
+const TimeSelectionTable = styled.div<{selectedGap: number}>`
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(${props => ({
+        15: 12,
+        30: 6,
+        60: 3
+    }[props.selectedGap] || 6)}, 1fr);
+    gap: 0.5em;
+    margin: 0.5em;
+    border-radius: 0.5em;
+`
 
 export default RegisterPlan;

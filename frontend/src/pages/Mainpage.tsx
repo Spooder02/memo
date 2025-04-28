@@ -238,7 +238,7 @@ const Dropdown = styled.div`
     border-radius: 0.25em;
 `;
 
-const DropdownItem = styled.li`
+export const DropdownItem = styled.li`
     list-style-type: none;
     text-align: center;
     width: 100%;
@@ -256,7 +256,7 @@ const DropdownItem = styled.li`
     }
 `;
 
-const DropdownContainer = styled.div`
+export const DropdownContainer = styled.div`
     position: relative;
 `;
 
