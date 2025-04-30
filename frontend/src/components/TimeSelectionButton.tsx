@@ -30,6 +30,7 @@ const ButtonContainer = styled.button<{isSelection: boolean}>`
 
     // 선택 시, 배경색을 연두색으로 변경
     background-color: ${props => props.isSelection ? "#93FF93" : ""};
+    transition: background-color 0.5s ease;
 `;
 
 export default TimeSelectionButton;

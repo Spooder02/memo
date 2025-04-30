@@ -7,3 +7,9 @@ export interface CalendarProps {
     currentDate: CurrentDate;
     setCurrentDate: React.Dispatch<React.SetStateAction<CurrentDate>>;
 }
+
+export interface TimeSelectionDate {
+    year: number;
+    month: number;
+    day: number;
+}
