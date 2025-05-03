@@ -15,7 +15,7 @@ const RegisterPlan: React.FC = () => {
     /* -- 변수들 -- **/
     const [TimeObject, setTimeObject] = useState<TimeSelectionObject[]>([]);
     // 12시간 크기의 숫자 배열 (분단위)
-    const allTheTimes = Array.from({ length: 48 }, (_, index) => index * 15);
+    const [allTheTimes, setAllTheTimes] = useState<number[]>(Array.from({ length: 48 }, (_, index) => index * 15));
     // 선택된 시간 처리를 위한 동적 배열
     const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
 
@@ -40,6 +40,7 @@ const RegisterPlan: React.FC = () => {
     const [selectedDates, setSelectedDates] = useState<number|null>();
     const [selectedDateObject, setSelectedDateObject] = useState<TimeSelectionDate | null>(null);
 
+
     /* -- 기타 메소드들 -- **/
     const toggleTimeFilterDropdown = () => {
         setTimeFilterDropdownOpen((prev) => !prev);
@@ -48,6 +49,7 @@ const RegisterPlan: React.FC = () => {
     const toggleTimeDivDropdown = () => {
         setTimeDivFilterDropdownOpen((prev) => !prev);
     };
+
 
     /* 동적 데이터 처리를 위한 useEffect 메소드들 **/
     useEffect(() => {
@@ -59,20 +61,18 @@ const RegisterPlan: React.FC = () => {
             };
 
             setSelectedDateObject(newSelectedDateObject);
-            console.log(selectedDateObject)
 
             const prevIndex = TimeObject.findIndex((obj) => {
                 return obj.date.day === selectedDates && obj.date.month == new Date().getMonth() + 1 && obj.date.year == new Date().getFullYear();
             });
         
-        // 선택된 날짜가 이미 존재하는 경우
+            // 선택된 날짜가 이미 존재하는 경우
             setTimeObject(prevTimeObject => {
                 const newTimeObject = [...prevTimeObject];
 
                 const newObject: TimeSelectionObject = {
                     date: newSelectedDateObject,
-                    times: selectedTimes,
-                    timeDiv: selectedTimeDivFilter == "오후" ? "오후" : "오전"
+                    times: selectedTimes
                 }
 
                 if (prevIndex === -1) {
@@ -87,6 +87,20 @@ const RegisterPlan: React.FC = () => {
         }
 
     }, [selectedDates, selectedTimes]);
+
+    // allTheTimes 배열과, selectedTime을 업데이트
+    useEffect(() => {
+        const newTimes: number[] = allTheTimes.map((t) => {
+            if (selectedTimeDivFilter === "오후" && allTheTimes[46] == 690) { // 오전이고, 배열이 정상
+                return t + 720;
+            } else if (selectedTimeDivFilter === "오전" && allTheTimes[46] == 1410) { // 오후이고, 배열이 정상
+                return t - 720;
+            } else {
+                return t
+            }
+        });
+        setAllTheTimes(newTimes);
+    }, [selectedTimeDivFilter])
 
     useEffect(() => {
         const prevIndex = TimeObject.findIndex
@@ -105,24 +119,6 @@ const RegisterPlan: React.FC = () => {
     useEffect(() => {
         console.log("Selected Time Object: ", TimeObject);
     }, [TimeObject]);
-
-    // TODO: 오전, 오후에 따라 배열의 값에 +690을 더해, 시간 선택시 배열 내부에서 구분이 되도록 구현.
-    useEffect(() => {
-        // 각 블럭이 +720이 적용되어 times 배열에 들어가도록
-        console.log(allTheTimes[allTheTimes.length-2]);
-        if (selectedTimeDivFilter === "오후") {
-            if (allTheTimes[length - 1] == 690)
-                allTheTimes.forEach((time, index) => {
-                    allTheTimes[index] = time + 720;
-                });
-        } else {
-            if (allTheTimes[length - 1] == 1410)
-                allTheTimes.forEach((time, index) => {
-                    allTheTimes[index] = time - 720; // 또는 allTheTimes[index] += 720;
-                });
-        }
-
-    }, [selectedTimeDivFilter]);
 
     useEffect(() => {
         // 상태 업데이트마다 드롭다운 닫기
@@ -239,6 +235,7 @@ const Title = styled.h1`
 const WeekCalendarContainer = styled.div`
     display: grid;
     grid-template-columns: repeat(7, 2fr);
+    justify-items: center;
 `;
 
 const TimeDivContainer = styled.div`
@@ -266,6 +263,7 @@ const TimeSelectionTable = styled.div<{selectedGap: number}>`
     gap: 0.5em;
     margin: 0.5em;
     border-radius: 0.5em;
+    justify-items: center;
 `
 
 export default RegisterPlan;

@@ -2,11 +2,15 @@
 export const formatTime = (totalMinutes: number) => {
     if (totalMinutes == 0)
         return '12:00';
+
+    if (totalMinutes == 30)
+        return '12:30';
     
     const hours = Math.floor(totalMinutes / 60);
+    const formattedHours = hours > 12? hours-12: hours;
     const minutes = totalMinutes % 60 == 0? '00':  totalMinutes % 60;
 
-    return `${hours}:${minutes}`;
+    return `${formattedHours}:${minutes}`;
 };
 
 export const getThisWeekDates = () => {
