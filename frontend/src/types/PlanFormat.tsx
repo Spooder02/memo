@@ -1,3 +1,5 @@
+import { TimeSelectionObject } from "./TimeSelectionObject";
+
 export interface SimplePlan {
     id: number;
     teamName: string;
@@ -7,3 +9,11 @@ export interface SimplePlan {
     color: string;
 }
 
+export interface RegisterPlanDetails {
+    plan: TimeSelectionObject;
+    selectedTime: number[];
+    priority: string;
+    disclosureRange: string[];
+    availableChannel: string;
+    description: string;
+}

@@ -10,6 +10,7 @@ import { TimeSelectionObject } from '../types/TimeSelectionObject';
 import { TimeSelectionDate } from '../types/DateFormat';
 import { formatTime, getThisWeekDates } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
+import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
 
 const RegisterPlan: React.FC = () => {
 
@@ -22,35 +23,86 @@ const RegisterPlan: React.FC = () => {
 
     const [weekDates, setWeekDates] = useState<number[]>([]);
 
-    // 시간 간격 구분 필터
-    const timeFilters = ["15분마다", "30분마다", "1시간마다"];
-    const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>(timeFilters[1]);
-    const [timeFilterDropdownOpen, setTimeFilterDropdownOpen] = useState(false);
-
     useEffect(() => {
         setWeekDates(getThisWeekDates());
     }, []);
 
-    // 오전 및 오후 구분 필터
-    const timeDivFilter = ["오전", "오후"];
-    const [selectedTimeDivFilter, setSelectedTimeDivFilter] = useState<string>(timeDivFilter[0]);
-
-    const [timeDivDropdownOpen, setTimeDivFilterDropdownOpen] = useState(false);
 
     // 선택된 날짜를 저장하고 데이터를 처리하는 메소드
     const [selectedDates, setSelectedDates] = useState<number|null>();
     const [selectedDateObject, setSelectedDateObject] = useState<TimeSelectionDate | null>(null);
 
+    // 드롭다운의 열림 여부를 관리하는 변수 및 메소드
+    type dropdownOptions = "timeDiv" | "timeFilter" |
+                            "selectedTime" | "disclosureRange"
+                            | "priority" | "availableChannel";
 
-    /* -- 기타 메소드들 -- **/
-    const toggleTimeFilterDropdown = () => {
-        setTimeFilterDropdownOpen((prev) => !prev);
+    type DropdownStates = {
+        timeDiv: boolean;
+        timeFilter: boolean;
+        selectedTime: boolean;
+        disclosureRange: boolean;
+        priority: boolean;
+        availableChannel: boolean;
     };
 
-    const toggleTimeDivDropdown = () => {
-        setTimeDivFilterDropdownOpen((prev) => !prev);
+    type DropdownStatesWithOptions = {
+        [key in dropdownOptions]: DropdownItemState;
     };
 
+    const [dropdownStates, setDropdownStates] = useState<DropdownStatesWithOptions>({
+        timeDiv: {
+            isOpen: false,
+            options: timeDivOptions,
+            selectedValue: timeDivOptions[0]
+        },
+        timeFilter: {
+            isOpen: false,
+            options: timeFilterOptions,
+            selectedValue: timeFilterOptions[1]
+        },
+        selectedTime: {
+            isOpen: false,
+            options: ["선택된 시간 전체"],
+            selectedValue: ["선택된 시간 전체"][0]
+        },
+        disclosureRange: {
+            isOpen: false,
+            options: ["임의의 팀"],
+            selectedValue: ["임의의 팀"][0]
+        },
+        priority: {
+            isOpen: false,
+            options: priorityOptions,
+            selectedValue: priorityOptions[0]
+        },
+        availableChannel: {
+            isOpen: false,
+            options: availableChannelOptions,
+            selectedValue: availableChannelOptions[0]
+        }
+    });
+
+    const toggleDropdown = (dropdownKey: dropdownOptions) => {
+        setDropdownStates(prev => ({
+            ...prev,
+            [dropdownKey]: {
+                ...prev[dropdownKey], 
+                isOpen: !prev[dropdownKey].isOpen
+            }
+        }));
+    }
+
+    const selectOption = (dropdownKey: dropdownOptions, value: string) => {
+        setDropdownStates(prev => ({
+            ...prev,
+            [dropdownKey]: {
+                ...prev[dropdownKey], 
+                selectedValue: value,
+                isOpen: false 
+            }
+        }));
+    };
 
     /* 동적 데이터 처리를 위한 useEffect 메소드들 **/
     useEffect(() => {
@@ -92,16 +144,16 @@ const RegisterPlan: React.FC = () => {
     // allTheTimes 배열과, selectedTime을 업데이트
     useEffect(() => {
         const newTimes: number[] = allTheTimes.map((t) => {
-            if (selectedTimeDivFilter === "오후" && allTheTimes[46] == 690) { // 오전이고, 배열이 정상
+            if (dropdownStates.timeDiv.selectedValue === "오후" && allTheTimes[46] == 690) { // 오전이고, 배열이 정상
                 return t + 720;
-            } else if (selectedTimeDivFilter === "오전" && allTheTimes[46] == 1410) { // 오후이고, 배열이 정상
+            } else if (dropdownStates.timeDiv.selectedValue === "오전" && allTheTimes[46] == 1410) { // 오후이고, 배열이 정상
                 return t - 720;
             } else {
                 return t
             }
         });
         setAllTheTimes(newTimes);
-    }, [selectedTimeDivFilter])
+    }, [dropdownStates.timeDiv.selectedValue])
 
     useEffect(() => {
         const prevIndex = TimeObject.findIndex
@@ -123,8 +175,18 @@ const RegisterPlan: React.FC = () => {
 
     useEffect(() => {
         // 상태 업데이트마다 드롭다운 닫기
-        setTimeFilterDropdownOpen(false);
-        setTimeDivFilterDropdownOpen(false);
+        setDropdownStates(prev => {
+            return Object.fromEntries(
+                Object.keys(prev).map(key => {
+                    const typedKey = key as dropdownOptions;
+                    return [typedKey, {
+                        ...prev[typedKey],
+                        isOpen: false
+                    }];
+                })
+            ) as DropdownStatesWithOptions;
+        });
+        
         
         /*
         // 디버깅 로그
@@ -132,10 +194,10 @@ const RegisterPlan: React.FC = () => {
         console.log("Selected Time Div Filter: ", selectedTimeDivFilter);
         console.log("Selected Time Filter: ", selectedTimeFilter);
         **/
-    }, [selectedDates, selectedTimeDivFilter, selectedTimeFilter]);
+    }, [selectedDates, selectedTimes, dropdownStates.timeFilter.selectedValue]);
 
     return (
-        <>
+        <PageContainer>
         <TimeTitle>4월 4주차 &gt;</TimeTitle>
         <Title>미팅 가능 시간을 선택해주세요!</Title>
         <WeekCalendarContainer>
@@ -157,32 +219,34 @@ const RegisterPlan: React.FC = () => {
         <TimeDivContainer>
             <DropdownContainer>
                 <TimeDivTitle>
-                    {selectedTimeDivFilter}
+                    {dropdownStates.timeDiv.selectedValue}
                     <DropdownButtonImage
                         src={images.dropdownArrow}
-                        isOpen={timeDivDropdownOpen}
-                        onClick={toggleTimeDivDropdown}
+                        isOpen={dropdownStates.timeDiv.isOpen}
+                        onClick={() => toggleDropdown('timeDiv')}
                     />
                 </TimeDivTitle>
                 <SmallDropdown
-                    arr={timeDivFilter}
-                    isOpen={timeDivDropdownOpen}
-                    clickEvent={setSelectedTimeDivFilter}
+                    arr={dropdownStates.timeDiv.options}
+                    isOpen={dropdownStates.timeDiv.isOpen}
+                    dropdownKey="timeDiv"
+                    clickEvent={selectOption}
                 />
             </DropdownContainer>
             <DropdownContainer>
                 <DropdownText>
-                {selectedTimeFilter}
+                {dropdownStates.timeFilter.selectedValue}
                 <DropdownButtonImage
                     src={images.dropdownArrow}
-                    isOpen={timeFilterDropdownOpen}
-                    onClick={toggleTimeFilterDropdown}
+                    isOpen={dropdownStates.timeFilter.isOpen}
+                    onClick={() => toggleDropdown('timeFilter')}
                 />
                 </DropdownText>
                 <SmallDropdown
-                arr={timeFilters}
-                isOpen={timeFilterDropdownOpen}
-                clickEvent={setSelectedTimeFilter}
+                arr={dropdownStates.timeFilter.options}
+                isOpen={dropdownStates.timeFilter.isOpen}
+                dropdownKey="timeFilter"
+                clickEvent={selectOption}
                 />
             </DropdownContainer>
             
@@ -194,9 +258,9 @@ const RegisterPlan: React.FC = () => {
                 allTheTimes.map((time) => {
                     // 오전, 오후 구분을 위한 시간 변환
                     // 30분마다로 설정되어 있으면, 30으로 나누어지지 않는 15분은 제외
-                    if (selectedTimeFilter == "30분마다" && time % 30 != 0) return null;
+                    if (dropdownStates.timeFilter.selectedValue == "30분마다" && time % 30 != 0) return null;
 
-                    if (selectedTimeFilter == "1시간마다" && time % 60 != 0) return null;
+                    if (dropdownStates.timeFilter.selectedValue == "1시간마다" && time % 60 != 0) return null;
 
                     const formattedTime = formatTime(time);
                     return (
@@ -224,11 +288,143 @@ const RegisterPlan: React.FC = () => {
         </TimeSelectionTable>
         <GrayLineDiv/>
         <OptionContainer>
-            
+            <OptionDivider>
+                <OptionText>
+                    <OptionIconImage src={images.clock}/>
+                    선택시간대
+                </OptionText>
+                <DropdownContainer>
+                    <DropdownText>
+                        {dropdownStates.selectedTime.selectedValue}
+                        <DropdownButtonImage
+                            src={images.dropdownArrow}
+                            isOpen={dropdownStates.selectedTime.isOpen}
+                            onClick={() => toggleDropdown('selectedTime')}
+                        />
+                    </DropdownText>
+                    <SmallDropdown
+                        boxWidth="125%"
+                        textSize="11pt"
+                        arr={dropdownStates.selectedTime.options}
+                        isOpen={dropdownStates.selectedTime.isOpen}
+                        dropdownKey="selectedTime"
+                        clickEvent={selectOption}
+                    />
+                </DropdownContainer>
+            </OptionDivider>
+
+            <OptionDivider>
+                <OptionText>
+                    <OptionIconImage src={images.thumbsup}/>
+                    우선 순위
+                </OptionText>
+                <DropdownContainer>
+                    <DropdownText>
+                        {dropdownStates.priority.selectedValue}
+                        <DropdownButtonImage
+                            src={images.dropdownArrow}
+                            isOpen={dropdownStates.priority.isOpen}
+                            onClick={() => toggleDropdown('priority')}
+                        />
+                    </DropdownText>
+                    <SmallDropdown
+                        boxWidth="130%"
+                        textSize="11pt"
+                        left="-0.75em"
+                        arr={dropdownStates.priority.options}
+                        isOpen={dropdownStates.priority.isOpen}
+                        dropdownKey="priority"
+                        clickEvent={selectOption}
+                    />
+                </DropdownContainer>
+            </OptionDivider>
+
+            <OptionDivider>
+                <OptionText>
+                    <OptionIconImage src={images.lock}/>
+                    공개 범위
+                </OptionText>
+                <DropdownContainer>
+                    <DropdownText>
+                        {dropdownStates.disclosureRange.selectedValue}
+                        <DropdownButtonImage
+                            src={images.dropdownArrow}
+                            isOpen={dropdownStates.disclosureRange.isOpen}
+                            onClick={() => toggleDropdown('disclosureRange')}
+                        />
+                    </DropdownText>
+                    <SmallDropdown
+                        textSize="11pt"
+                        boxWidth="125%"
+                        left="-0.5em"
+                        arr={dropdownStates.disclosureRange.options}
+                        isOpen={dropdownStates.disclosureRange.isOpen}
+                        dropdownKey="disclosureRange"
+                        clickEvent={selectOption}
+                    />
+                </DropdownContainer>
+            </OptionDivider>
+
+            <OptionDivider>
+                <OptionText>
+                    <OptionIconImage src={images.arrowdown}/>
+                    참여가능 채널
+                </OptionText>
+                <DropdownContainer>
+                    <DropdownText>
+                        {dropdownStates.availableChannel.selectedValue}
+                        <DropdownButtonImage
+                            src={images.dropdownArrow}
+                            isOpen={dropdownStates.availableChannel.isOpen}
+                            onClick={() => toggleDropdown('availableChannel')}
+                        />
+                    </DropdownText>
+                    <SmallDropdown
+                        textSize="10pt"
+                        boxWidth="125%"
+                        arr={dropdownStates.availableChannel.options}
+                        isOpen={dropdownStates.availableChannel.isOpen}
+                        dropdownKey="availableChannel"
+                        clickEvent={selectOption}
+                    />
+                </DropdownContainer>
+            </OptionDivider>
+
+            <OptionDivider>
+            <OptionText>
+                <OptionIconImage src={images.info}/>
+                추가 설명
+            </OptionText>
+            </OptionDivider>
+            <DescriptionTextBox placeholder="가능한 일정에 대한 부연설명을 써보세요."/>
+            <ButtonContainer>
+                <ResetButton>
+                    초기화
+                </ResetButton>
+                <SaveButton>
+                    저장
+                </SaveButton>
+            </ButtonContainer>
         </OptionContainer>
-        </>
+        
+
+        </PageContainer>
     )
 };
+
+const PageContainer = styled.section`
+    height: calc(100vh - 4em);
+    overflow: scroll;
+    padding-bottom: 1.5em;
+    scroll: none;
+
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+`;
 
 const TimeTitle = styled.h3`
     font-size: 15pt;
@@ -249,6 +445,7 @@ const WeekCalendarContainer = styled.div`
 const TimeDivContainer = styled.div`
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin: 0 0.5em 0.5em 0.5em;
 `;
 
@@ -273,16 +470,65 @@ const TimeSelectionTable = styled.div<{selectedGap: number}>`
     justify-items: center;
     margin: 1em 0.5em 1em 0.5em;
 `
+const OptionContainer = styled.section`
+    display: grid;
+    margin: 0.75em;
+    gap: 0.75em;
+`;
 
-const OptionContainer = styled.div`
+const OptionDivider = styled.div`
     display: flex;
     justify-content: space-between;
-    margin: 0 0.5em 0.5em 0.5em;
+    align-items: center;
 `;
 
 const OptionIconImage = styled.img`
-    width: 2em;
-    
+    width: 1em;
+    height: 100%;
+    margin: 0 0.5em 0 0;
+`;
+
+const OptionText = styled.p`
+    display: flex;
+    align-items: center;
+    font-size: 13pt;
+    font-weight: 400;
+`;
+
+const DescriptionTextBox = styled.textarea`
+    border-bottom: 1px solid #BCBCBC;
+    box-radius: 0.25em;
+    transition: border-bottom ease 0.5s;
+
+    &:focus {
+        border-bottom: 1px solid #2693FF;
+        outline: none;
+    }
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    flex: 1;
+    gap: 0.5em;
+`;
+
+const ResetButton = styled.button`
+    font-size: 12pt;
+    width: 100%;
+    border-radius: 0.5em;
+    border: 1px solid #C2C2C2;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    padding: 0.25em 1em 0.25em 1em;
+`;
+
+const SaveButton = styled.button`
+    font-size: 12pt;
+    color: white;
+    width: 100%;
+    background-color: #2693FF; 
+    border-radius: 0.5em;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    padding: 0.25em 1em 0.25em 1em;
 `;
 
 export default RegisterPlan;

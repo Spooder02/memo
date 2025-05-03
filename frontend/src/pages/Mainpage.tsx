@@ -7,6 +7,7 @@ import UpcomingPlanCard from "../components/UpcomingPlanCard";
 import simplePlansData from "../assets/SimplePlans.json";
 import { SimplePlan } from "../types/PlanFormat";
 import images from "../utils/ImportImages";
+import { DropdownItem } from "../components/SmallDropdown";
 
 const Mainpage = () => {
     const planData: SimplePlan[] = simplePlansData;
@@ -237,24 +238,6 @@ const Dropdown = styled.div`
     left: -1.5em;
     background-color: #FAFAFA;
     border-radius: 0.25em;
-`;
-
-export const DropdownItem = styled.li`
-    list-style-type: none;
-    text-align: center;
-    width: 100%;
-    margin: auto;
-    padding: 0.5em 0;
-
-    /* Non-draggable */
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none; /* IE 10 and IE 11 */
-    user-select: none;
-
-    &:hover {
-        background-color: #E0E0E0;
-        border-radius: 0.5em;
-    }
 `;
 
 export const DropdownContainer = styled.div`
