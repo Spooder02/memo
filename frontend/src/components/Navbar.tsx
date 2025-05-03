@@ -1,8 +1,8 @@
 import styled from "styled-components"
-import logo from "../assets/memo.png";
 import HamburgerMenu from "./HamburgerMenu";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import images from "../utils/ImportImages";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Navbar = () => {
     return (
         <>
         <Header>
-            <Logo src={logo} onClick={() => navigate('/')}/>
+            <Logo src={images.memoLogo} onClick={() => navigate('/')}/>
             <HamburgerMenu
                 isOpen={isOpen}
                 onClick={invertStatus}

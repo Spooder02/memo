@@ -3,9 +3,10 @@ import Calendar from "../components/Calendar";
 import { useEffect, useState } from "react";
 import { CurrentDate } from "../types/DateFormat";
 import UpcomingPlanCard from "../components/UpcomingPlanCard";
-import DropdownButton from "../assets/drop-down-arrow (1).png";
+
 import simplePlansData from "../assets/SimplePlans.json";
 import { SimplePlan } from "../types/PlanFormat";
+import images from "../utils/ImportImages";
 
 const Mainpage = () => {
     const planData: SimplePlan[] = simplePlansData;
@@ -121,7 +122,7 @@ const Mainpage = () => {
                         <DropdownText onClick={handleClick} onTouchStart={handleTouchStart}>
                             {selectedFilter}
                             <DropdownButtonImage
-                                src={DropdownButton}
+                                src={images.dropdownArrow}
                                 isOpen={dropdownOpen}
                             />
                         </DropdownText>

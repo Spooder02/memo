@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import groupedimage from "../assets/user_icon_007.png";
 import { SimplePlan } from "../types/PlanFormat";
+import images from "../utils/ImportImages";
 
 const UpcomingPlanCard = (props: {
     plan: SimplePlan
@@ -17,7 +18,7 @@ const UpcomingPlanCard = (props: {
         >
             <SpaceAroundContainer>
                 <div style={{"display": "flex"}}>
-                <GroupImage src={groupedimage}/>
+                <GroupImage src={images.groupicon}/>
                 <TextContainer>
                     <TeamName>{data.teamName}</TeamName>
                     <MeetingName>{data.meetingName}</MeetingName>

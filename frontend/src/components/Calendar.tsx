@@ -1,10 +1,11 @@
 import styled from "styled-components";
 import DayBlock from "./DayBlock";
-import arrow from "../assets/playbutton.png"
+
 import { CalendarProps } from "../types/DateFormat";
 import { SimplePlan } from "../types/PlanFormat";
 import simplePlansData from "../assets/SimplePlans.json";
 import DateBlocks from "./DateBlocks";
+import images from "../utils/ImportImages";
 
 const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
     const planData: SimplePlan[] = simplePlansData;
@@ -126,7 +127,7 @@ const ChangeDateButton = styled.button<{right: boolean}>`
     height: 14px;
     transform: rotate(${(props) => props.right? '0':'180'}deg);
     background-size: cover;
-    background-image: url(${arrow});
+    background-image: url(${images.arrowdown});
     background-repeat: no-repeat;
     margin: 0 0.5em 0 0.5em;
 `;

@@ -3,12 +3,13 @@ import styled from 'styled-components';
 import DateBlocks from '../components/DateBlocks';
 import DayBlock from '../components/DayBlock';
 import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
-import DropdownButton from "../assets/drop-down-arrow (1).png";
+
 import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
 import { TimeSelectionObject } from '../types/TimeSelectionObject';
 import { TimeSelectionDate } from '../types/DateFormat';
 import { formatTime, getThisWeekDates } from '../utils/TimeUtils';
+import images from '../utils/ImportImages';
 
 const RegisterPlan: React.FC = () => {
 
@@ -158,7 +159,7 @@ const RegisterPlan: React.FC = () => {
                 <TimeDivTitle>
                     {selectedTimeDivFilter}
                     <DropdownButtonImage
-                        src={DropdownButton}
+                        src={images.dropdownArrow}
                         isOpen={timeDivDropdownOpen}
                         onClick={toggleTimeDivDropdown}
                     />
@@ -173,7 +174,7 @@ const RegisterPlan: React.FC = () => {
                 <DropdownText>
                 {selectedTimeFilter}
                 <DropdownButtonImage
-                    src={DropdownButton}
+                    src={images.dropdownArrow}
                     isOpen={timeFilterDropdownOpen}
                     onClick={toggleTimeFilterDropdown}
                 />
@@ -201,10 +202,14 @@ const RegisterPlan: React.FC = () => {
                     return (
                         <TimeSelectionButton
                             setIsSelection={() => {
-                                if (selectedTimes.includes(time)) {
-                                    setSelectedTimes(selectedTimes.filter(t => t !== time));
-                                } else {
-                                    setSelectedTimes([...selectedTimes, time]);
+                                if (selectedDates) {
+                                    if (selectedTimes.includes(time)) {
+                                        setSelectedTimes(selectedTimes.filter(t => t !== time));
+                                    } else {
+                                        setSelectedTimes([...selectedTimes, time]);
+                                    }
+                                } else { 
+                                    alert("[경고] 날짜를 먼저 선택해주세요!");
                                 }
                                 }
                             }
@@ -217,7 +222,10 @@ const RegisterPlan: React.FC = () => {
                 })
             }
         </TimeSelectionTable>
-       
+        <GrayLineDiv/>
+        <OptionContainer>
+            
+        </OptionContainer>
         </>
     )
 };
@@ -261,9 +269,20 @@ const TimeSelectionTable = styled.div<{selectedGap: number}>`
         60: 3
     }[props.selectedGap] || 6)}, 1fr);
     gap: 0.5em;
-    margin: 0.5em;
     border-radius: 0.5em;
     justify-items: center;
+    margin: 1em 0.5em 1em 0.5em;
 `
+
+const OptionContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0.5em 0.5em 0.5em;
+`;
+
+const OptionIconImage = styled.img`
+    width: 2em;
+    
+`;
 
 export default RegisterPlan;
