@@ -26,7 +26,7 @@ const Frame = styled.button<{today: boolean}>`
     display: grid;
     justify-content: center;
     padding: 0.2em;
-    width: 2.75em;
+    width: 100%;
     height: 3em;
     border-radius: 0.25em;
 

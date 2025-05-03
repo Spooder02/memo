@@ -13,3 +13,7 @@ export interface TimeSelectionDate {
     month: number;
     day: number;
 }
+
+export interface FullTimeInfo extends TimeSelectionDate {
+    weekNum: number;
+}

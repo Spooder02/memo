@@ -8,47 +8,48 @@ import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
 import { TimeSelectionObject } from '../types/TimeSelectionObject';
 import { TimeSelectionDate } from '../types/DateFormat';
+import { formatTime, getThisWeekDates } from '../utils/TimeUtils';
 
 const RegisterPlan: React.FC = () => {
 
+    /* -- 변수들 -- **/
     const [TimeObject, setTimeObject] = useState<TimeSelectionObject[]>([]);
     // 12시간 크기의 숫자 배열 (분단위)
     const allTheTimes = Array.from({ length: 48 }, (_, index) => index * 15);
     // 선택된 시간 처리를 위한 동적 배열
     const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
 
-    // display 및 내부 처리를 위한 시간 포맷팅 (90 -> 1:30)
-    const formatTime = (totalMinutes: number) => {
-        if (totalMinutes == 0)
-            return '12:00';
-        
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60 == 0? '00':  totalMinutes % 60;
-
-        return `${hours}:${minutes}`;
-    };
-
-    const getThisWeekDates = () => {
-        const today = new Date();
-        const day = today.getDay(); // 0(일) ~ 6(토)
-        const sundayOffset = -day;
-        
-        return Array.from({ length: 7 }, (_, i) => {
-            const d = new Date(today);
-            d.setDate(today.getDate() + sundayOffset + i);
-            return d.getDate();  // 날짜(1~31)만 반환
-        });
-    }
-
     const [weekDates, setWeekDates] = useState<number[]>([]);
+
+    // 시간 간격 구분 필터
+    const timeFilters = ["15분마다", "30분마다", "1시간마다"];
+    const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>(timeFilters[1]);
+    const [timeFilterDropdownOpen, setTimeFilterDropdownOpen] = useState(false);
 
     useEffect(() => {
         setWeekDates(getThisWeekDates());
     }, []);
 
+    // 오전 및 오후 구분 필터
+    const timeDivFilter = ["오전", "오후"];
+    const [selectedTimeDivFilter, setSelectedTimeDivFilter] = useState<string>(timeDivFilter[0]);
+
+    const [timeDivDropdownOpen, setTimeDivFilterDropdownOpen] = useState(false);
+
+    // 선택된 날짜를 저장하고 데이터를 처리하는 메소드
     const [selectedDates, setSelectedDates] = useState<number|null>();
     const [selectedDateObject, setSelectedDateObject] = useState<TimeSelectionDate | null>(null);
 
+    /* -- 기타 메소드들 -- **/
+    const toggleTimeFilterDropdown = () => {
+        setTimeFilterDropdownOpen((prev) => !prev);
+    };
+
+    const toggleTimeDivDropdown = () => {
+        setTimeDivFilterDropdownOpen((prev) => !prev);
+    };
+
+    /* 동적 데이터 처리를 위한 useEffect 메소드들 **/
     useEffect(() => {
         if (selectedDates) {
             const newSelectedDateObject: TimeSelectionDate = {
@@ -105,24 +106,23 @@ const RegisterPlan: React.FC = () => {
         console.log("Selected Time Object: ", TimeObject);
     }, [TimeObject]);
 
-    // 오전 및 오후 구분 필터
-    const timeDivFilter = ["오전", "오후"];
-    const [selectedTimeDivFilter, setSelectedTimeDivFilter] = useState<string>(timeDivFilter[0]);
+    // TODO: 오전, 오후에 따라 배열의 값에 +690을 더해, 시간 선택시 배열 내부에서 구분이 되도록 구현.
+    useEffect(() => {
+        // 각 블럭이 +720이 적용되어 times 배열에 들어가도록
+        console.log(allTheTimes[allTheTimes.length-2]);
+        if (selectedTimeDivFilter === "오후") {
+            if (allTheTimes[length - 1] == 690)
+                allTheTimes.forEach((time, index) => {
+                    allTheTimes[index] = time + 720;
+                });
+        } else {
+            if (allTheTimes[length - 1] == 1410)
+                allTheTimes.forEach((time, index) => {
+                    allTheTimes[index] = time - 720; // 또는 allTheTimes[index] += 720;
+                });
+        }
 
-    const [timeDivDropdownOpen, setTimeDivFilterDropdownOpen] = useState(false);
-
-    const toggleTimeDivDropdown = () => {
-        setTimeDivFilterDropdownOpen((prev) => !prev);
-    };
-
-    // 시간 간격 구분 필터
-    const timeFilters = ["15분마다", "30분마다", "1시간마다"];
-    const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>(timeFilters[1]);
-    const [timeFilterDropdownOpen, setTimeFilterDropdownOpen] = useState(false);
-
-    const toggleTimeFilterDropdown = () => {
-        setTimeFilterDropdownOpen((prev) => !prev);
-    };
+    }, [selectedTimeDivFilter]);
 
     useEffect(() => {
         // 상태 업데이트마다 드롭다운 닫기
@@ -195,7 +195,7 @@ const RegisterPlan: React.FC = () => {
         <TimeSelectionTable selectedGap={30}>
             {
                 allTheTimes.map((time) => {
-
+                    // 오전, 오후 구분을 위한 시간 변환
                     // 30분마다로 설정되어 있으면, 30으로 나누어지지 않는 15분은 제외
                     if (selectedTimeFilter == "30분마다" && time % 30 != 0) return null;
 
