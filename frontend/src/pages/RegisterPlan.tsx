@@ -8,7 +8,7 @@ import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
 import { TimeSelectionObject } from '../types/TimeSelectionObject';
 import { TimeSelectionDate } from '../types/DateFormat';
-import { formatTime, getThisWeekDates } from '../utils/TimeUtils';
+import { formatTime, getThisMonth, getThisWeek, getThisWeekDates, groupAndFormatTimes } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
 import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
 
@@ -30,21 +30,11 @@ const RegisterPlan: React.FC = () => {
 
     // 선택된 날짜를 저장하고 데이터를 처리하는 메소드
     const [selectedDates, setSelectedDates] = useState<number|null>();
-    const [selectedDateObject, setSelectedDateObject] = useState<TimeSelectionDate | null>(null);
 
     // 드롭다운의 열림 여부를 관리하는 변수 및 메소드
     type dropdownOptions = "timeDiv" | "timeFilter" |
                             "selectedTime" | "disclosureRange"
                             | "priority" | "availableChannel";
-
-    type DropdownStates = {
-        timeDiv: boolean;
-        timeFilter: boolean;
-        selectedTime: boolean;
-        disclosureRange: boolean;
-        priority: boolean;
-        availableChannel: boolean;
-    };
 
     type DropdownStatesWithOptions = {
         [key in dropdownOptions]: DropdownItemState;
@@ -113,19 +103,43 @@ const RegisterPlan: React.FC = () => {
                 day: selectedDates!
             };
 
-            setSelectedDateObject(newSelectedDateObject);
-
             const prevIndex = TimeObject.findIndex((obj) => {
                 return obj.date.day === selectedDates && obj.date.month == new Date().getMonth() + 1 && obj.date.year == new Date().getFullYear();
             });
+
+            const sortedTimes = [...selectedTimes].sort();
+            // 정렬된 배열에서 바로 다음 값의 차이가 timeFilter만큼 난다면 그 시간을 묶어 표기, selectedTime array에 push
+            // ex) [0, 15, 30, 45, 90, 120] -> ["12:00 ~ 12:45", "1:30", "2:00"]
+            const timeGap = () => {
+                if (dropdownStates.timeFilter.selectedValue == "30분마다") return 30;
+                else if (dropdownStates.timeFilter.selectedValue == "1시간마다") return 60;
+                else return 15;
+            }
+            const formattedSelectedTimes = groupAndFormatTimes(sortedTimes, timeGap());
+            setDropdownStates(prev => ({
+                ...prev,
+                selectedTime: {
+                    ...prev.selectedTime,
+                    options: formattedSelectedTimes,
+                    selectedValue: formattedSelectedTimes[0]
+                }
+            }));
+                
         
             // 선택된 날짜가 이미 존재하는 경우
             setTimeObject(prevTimeObject => {
                 const newTimeObject = [...prevTimeObject];
 
-                const newObject: TimeSelectionObject = {
+                const newObject: TimeSelectionObject = {  
                     date: newSelectedDateObject,
-                    times: selectedTimes
+                    times: selectedTimes,
+                    details: {
+                        selectedTime: dropdownStates.selectedTime.selectedValue,
+                        priority: dropdownStates.priority.selectedValue,
+                        disclosureRange: dropdownStates.disclosureRange.selectedValue,
+                        availableChannel: dropdownStates.availableChannel.selectedValue,
+                        description: ""
+                    }
                 }
 
                 if (prevIndex === -1) {
@@ -155,7 +169,7 @@ const RegisterPlan: React.FC = () => {
         setAllTheTimes(newTimes);
     }, [dropdownStates.timeDiv.selectedValue])
 
-    useEffect(() => {
+    useEffect(() => { // 선택된 날짜에 따라 시간 상태 업데이트
         const prevIndex = TimeObject.findIndex
         // eslint-disable-next-line no-unexpected-multiline
         ((obj) => { return obj.date.day === selectedDates && obj.date.month == new Date().getMonth() + 1 && obj.date.year == new Date().getFullYear();});
@@ -198,7 +212,7 @@ const RegisterPlan: React.FC = () => {
 
     return (
         <PageContainer>
-        <TimeTitle>4월 4주차 &gt;</TimeTitle>
+        <TimeTitle>{getThisMonth()}월 {getThisWeek()}주차 &gt;</TimeTitle>
         <Title>미팅 가능 시간을 선택해주세요!</Title>
         <WeekCalendarContainer>
             <DateBlocks/>

@@ -1,5 +1,4 @@
 import styled from "styled-components"
-import groupedimage from "../assets/user_icon_007.png";
 import { SimplePlan } from "../types/PlanFormat";
 import images from "../utils/ImportImages";
 

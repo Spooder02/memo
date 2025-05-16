@@ -37,14 +37,16 @@ export const SmallDropdown = (props:{
 const DropdownContainer = styled.div<{isOpen: boolean, boxWidth?: string, left?: string}>`
     display: ${props => props.isOpen? "flex" : "none"};
     width: ${props => props.boxWidth? props.boxWidth: "150%"};
+    height: 10em;
     left: ${props => props.left? props.left: "-1em"};
     flex-direction: column;
     position: absolute;
-    background-color: #F0F0F0;
+    background-color: #FBFBFB;
     border-radius: 0.5em;
-    box-shadow: 2px 2px 4px rgb(155, 155, 155);
+    box-shadow: 1px 1px 3px rgb(180, 180, 180);
     padding: 0.5em;
     z-index: 1;
+    overflow-y: auto;
     
 `;
 

@@ -1,7 +1,7 @@
 export type DropdownItemState = {
     isOpen: boolean;
     options: any[];
-    selectedValue?: string;
+    selectedValue: string;
 }
 
 export const timeDivOptions = ["오전", "오후"];

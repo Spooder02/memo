@@ -127,7 +127,7 @@ const ChangeDateButton = styled.button<{right: boolean}>`
     height: 14px;
     transform: rotate(${(props) => props.right? '0':'180'}deg);
     background-size: cover;
-    background-image: url(${images.arrowdown});
+    background-image: url(${images.playbutton});
     background-repeat: no-repeat;
     margin: 0 0.5em 0 0.5em;
 `;
