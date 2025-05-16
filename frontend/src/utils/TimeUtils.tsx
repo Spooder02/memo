@@ -37,7 +37,7 @@ export const getThisWeek = () => {
 }
 
 export const groupAndFormatTimes = (sortedTimes: number[], timeFilter: number): string[] => {
-  const selectedTime: string[] = ["선택된 시간 전체"];
+  const selectedTime: string[] = [];
 
   // 빈 배열이 들어오면 기본 배열 반환
   if (sortedTimes.length === 0) return selectedTime;

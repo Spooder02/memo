@@ -120,11 +120,11 @@ const RegisterPlan: React.FC = () => {
                 ...prev,
                 selectedTime: {
                     ...prev.selectedTime,
-                    options: formattedSelectedTimes,
-                    selectedValue: formattedSelectedTimes[0]
+                    options: ["선택된 시간 전체"].concat(formattedSelectedTimes),
+                    selectedValue: "선택된 시간 전체"
                 }
             }));
-                
+            console.log("dropdownStates: ", dropdownStates);
         
             // 선택된 날짜가 이미 존재하는 경우
             setTimeObject(prevTimeObject => {

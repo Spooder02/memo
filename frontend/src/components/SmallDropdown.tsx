@@ -37,7 +37,7 @@ export const SmallDropdown = (props:{
 const DropdownContainer = styled.div<{isOpen: boolean, boxWidth?: string, left?: string}>`
     display: ${props => props.isOpen? "flex" : "none"};
     width: ${props => props.boxWidth? props.boxWidth: "150%"};
-    height: 10em;
+    max-height: 10em;
     left: ${props => props.left? props.left: "-1em"};
     flex-direction: column;
     position: absolute;
