@@ -11,6 +11,7 @@ import { TimeSelectionDate } from '../types/DateFormat';
 import { formatTime, getThisMonth, getThisWeek, getThisWeekDates, groupAndFormatTimes } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
 import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
+import CheckModal from '../components/CheckModal';
 
 const RegisterPlan: React.FC = () => {
 
@@ -26,6 +27,11 @@ const RegisterPlan: React.FC = () => {
     useEffect(() => {
         setWeekDates(getThisWeekDates());
     }, []);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const toggleAndCloseModal = () => {
+        setIsModalOpen(prev => !prev);
+    }
 
 
     // 선택된 날짜를 저장하고 데이터를 처리하는 메소드
@@ -124,7 +130,6 @@ const RegisterPlan: React.FC = () => {
                     selectedValue: "선택된 시간 전체"
                 }
             }));
-            console.log("dropdownStates: ", dropdownStates);
         
             // 선택된 날짜가 이미 존재하는 경우
             setTimeObject(prevTimeObject => {
@@ -146,7 +151,6 @@ const RegisterPlan: React.FC = () => {
                     newTimeObject.push(newObject);
                 } else {
                     newTimeObject[prevIndex] = newObject; // 일정이 있으면 업데이트
-
                 }
 
                 return newTimeObject;
@@ -184,10 +188,6 @@ const RegisterPlan: React.FC = () => {
     }, [selectedDates]);
 
     useEffect(() => {
-        console.log("Selected Time Object: ", TimeObject);
-    }, [TimeObject]);
-
-    useEffect(() => {
         // 상태 업데이트마다 드롭다운 닫기
         setDropdownStates(prev => {
             return Object.fromEntries(
@@ -210,8 +210,29 @@ const RegisterPlan: React.FC = () => {
         **/
     }, [selectedDates, selectedTimes, dropdownStates.timeFilter.selectedValue]);
 
+    const submitPlan = () => {
+        const prevIndex = TimeObject.findIndex((obj) => {
+            return obj.date.day === selectedDates && obj.date.month == new Date().getMonth() + 1 && obj.date.year == new Date().getFullYear();
+        });
+        if (prevIndex !== -1) {
+            console.log(TimeObject[prevIndex]);
+            toggleAndCloseModal();
+            setTimeout(() => {
+                toggleAndCloseModal();
+            }, 3000)
+        } else {
+            alert("[오류] 날짜와 일정을 선택하세요!");
+        }
+        
+    }
+
     return (
         <PageContainer>
+        <CheckModal
+            title='저장 완료'
+            desc='일정이 저장되었습니다'
+            isToggle={isModalOpen}
+        />
         <TimeTitle>{getThisMonth()}월 {getThisWeek()}주차 &gt;</TimeTitle>
         <Title>미팅 가능 시간을 선택해주세요!</Title>
         <WeekCalendarContainer>
@@ -410,17 +431,31 @@ const RegisterPlan: React.FC = () => {
                 추가 설명
             </OptionText>
             </OptionDivider>
-            <DescriptionTextBox placeholder="가능한 일정에 대한 부연설명을 써보세요."/>
+            <DescriptionTextBox
+                onChange={(e) => {
+                    const newTimeObject = [...TimeObject];
+                    const prevIndex = newTimeObject.findIndex((obj) => {
+                        return obj.date.day === selectedDates && obj.date.month == new Date().getMonth() + 1 && obj.date.year == new Date().getFullYear();
+                    });
+                    if (prevIndex !== -1) {
+                        newTimeObject[prevIndex].details.description = e.target.value;
+                        setTimeObject(newTimeObject);
+                    }
+                }
+                }
+                placeholder="가능한 일정에 대한 부연설명을 써보세요."
+            />
             <ButtonContainer>
                 <ResetButton>
                     초기화
                 </ResetButton>
-                <SaveButton>
+                <SaveButton onClick={() => {
+                    submitPlan();
+                }}>
                     저장
                 </SaveButton>
             </ButtonContainer>
         </OptionContainer>
-        
 
         </PageContainer>
     )

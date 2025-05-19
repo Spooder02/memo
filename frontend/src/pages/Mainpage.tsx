@@ -101,6 +101,8 @@ const Mainpage = () => {
 
     }, [selectedFilter])
 
+    const filteredPlans = planData.filter(data => getDday(data.dayLeft) >= 0);
+
     return (
         <PageFrame>
             <div>
@@ -147,16 +149,20 @@ const Mainpage = () => {
                     </DropdownContainer>
                 </PlanTitleContainer>
                 <UpcomingPlanContainer>
-                    {
-                        planData.map((data) => (
-                            (getDday(data.dayLeft) >= 0)?
-                            <UpcomingPlanCard
-                                key={data.id} // 각 카드에 고유한 키 추가
-                                plan={data}
-                                dday={getDday(data.dayLeft)}
-                            />:<></>
-                        ))
-                    }
+                    {filteredPlans.length > 0 ? (
+                    
+                    filteredPlans.map((data) => (
+                        <UpcomingPlanCard
+                        key={data.id}
+                        plan={data}
+                        dday={getDday(data.dayLeft)}
+                        />
+                    ))
+                    ) : (
+                    <NoPlanText>
+                        예정된 계획이 없습니다.
+                    </NoPlanText>
+                    )}
                 </UpcomingPlanContainer>
             </PlanContainer>
         </PageFrame>
@@ -242,6 +248,14 @@ const Dropdown = styled.div`
 
 export const DropdownContainer = styled.div`
     position: relative;
+`;
+
+const NoPlanText = styled.p`
+    width: 100%;
+    padding: 2em;
+    text-align: center;
+    font-size: 16pt;
+    font-weight: 700;
 `;
 
 export default Mainpage;
