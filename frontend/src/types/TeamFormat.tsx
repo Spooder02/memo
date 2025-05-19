@@ -1,7 +1,8 @@
 export interface SimpleTeamInfo {
+    teamImage: string;
     teamName: string;
     teamScale: number;
-    description: string;
+    teamDesc: string;
 }
 
 export interface DetailedTeamInfo extends SimpleTeamInfo {

@@ -192,7 +192,7 @@ const PlanText = styled.p`
     font-weight: 500;
 `;
 
-const PageFrame = styled.div`
+export const PageFrame = styled.div`
     position: relative;
     height: calc(100vh - 5em);
     overflow: hidden;
