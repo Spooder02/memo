@@ -6,6 +6,7 @@ import RegisterPlan from "./pages/RegisterPlan";
 import Layout from "./Layout";
 import TeamPage from "./pages/TeamPage";
 import MyProfilePage from "./pages/MyProfile";
+import SetProfile from "./pages/SetProfile";
 
 interface RouteElement {
     path: string;
@@ -23,7 +24,8 @@ const routes: RouteElement[] = [
             { path: '', element: <Mainpage/> },
             { path: 'registerplan', element: <RegisterPlan/> },
             { path: 'myteam', element: <TeamPage/> },
-            { path: 'profile', element: <MyProfilePage/>}
+            { path: 'profile', element: <MyProfilePage/> },
+            { path: 'setProfile', element: <SetProfile/> }
         ],
     }
 ]

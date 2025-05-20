@@ -24,7 +24,7 @@ const MyProfilePage = () => {
                 </ProfileTitle>
                 <ProfileMembership>
                     <MembershipCircle membershipType={membershipType}/>
-                    {membershipType} 요금제 이용중
+                    {membershipType} 요금제 이용 중
                 </ProfileMembership>
             </ProfileDetailContainer>
         </ProfileHeaderContainer>
@@ -49,11 +49,15 @@ const MyProfilePage = () => {
                 toLink="/connectCalendar"
             />
             <MenuWithIcon
+                logoSrc={images.clock}
+                menuTitle="일정 설정"
+                toLink="/setSchedule"
+            />
+            <MenuWithIcon
                 logoSrc={images.info}
                 menuTitle="서비스 정보"
                 toLink="/infomation"
             />
-            
         </MenuContainer>
         </>
     )
@@ -64,8 +68,9 @@ const ProfileTitle = styled.h1`
     font-weight: 700;
 `;
 
-const ProfileHeaderContainer = styled.header`
+export const ProfileHeaderContainer = styled.header`
     display: flex;
+    flex: 1;
     margin-bottom: 0.5em;
 `;
 
@@ -75,6 +80,7 @@ const ProfileMembership = styled.a`
 
 const ProfileDetailContainer = styled.div`
     display: block;
+    padding-top: 0.25em;
 `;
 
 const SettingTitle = styled.h1`

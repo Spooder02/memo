@@ -51,8 +51,9 @@ const Header = styled.nav`
     height: 3em;
     z-index: 100;
     background-color: rgb(255,255,255,0.5);
-    padding: 2em 1.5em 2em 1.5em;
-    margin-top: 0.5em;
+    padding: 2.5em 1.5em 2em 1.5em;
+    border-radius: 0 0 0.25em 0.25em;
+    box-shadow: 0 1px 3px #CCCCCC;
 `;
 
 const Logo = styled.img`
