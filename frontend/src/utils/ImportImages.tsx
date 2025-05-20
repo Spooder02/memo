@@ -2,7 +2,7 @@
 type ImageModules = Record<string, { default: string } | string>;
 
 
-const modules: ImageModules = import.meta.glob('../assets/*.{png,jpe?g,svg,gif}', { eager: true });
+const modules: ImageModules = import.meta.glob('../assets/*.{png,jpeg,jpg,svg,gif}', { eager: true });
 
 const images: Record<string, string> = {}; // 파일 이름을 키로, 이미지 URL 문자열을 값으로 가지는 객체
 

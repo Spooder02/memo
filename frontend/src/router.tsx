@@ -5,6 +5,7 @@ import Mainpage from "./pages/Mainpage";
 import RegisterPlan from "./pages/RegisterPlan";
 import Layout from "./Layout";
 import TeamPage from "./pages/TeamPage";
+import MyProfilePage from "./pages/MyProfile";
 
 interface RouteElement {
     path: string;
@@ -20,8 +21,9 @@ const routes: RouteElement[] = [
         errorElement: <NotFound/>,
         children: [
             { path: '', element: <Mainpage/> },
-            { path: 'registerplan', element: <RegisterPlan/>},
-            { path: 'myteam', element: <TeamPage/>}
+            { path: 'registerplan', element: <RegisterPlan/> },
+            { path: 'myteam', element: <TeamPage/> },
+            { path: 'profile', element: <MyProfilePage/>}
         ],
     }
 ]
