@@ -29,9 +29,6 @@ const MyProfilePage = () => {
             </ProfileDetailContainer>
         </ProfileHeaderContainer>
         <GrayLineDiv/>
-        <SettingTitle>
-            설정
-        </SettingTitle>
         <MenuContainer>
             <MenuWithIcon
                 logoSrc={images.user}
@@ -70,11 +67,11 @@ const ProfileTitle = styled.h1`
 
 export const ProfileHeaderContainer = styled.header`
     display: flex;
-    flex: 1;
-    margin-bottom: 0.5em;
+    padding: 0.5em;
+    margin-bottom: 0.25em;
 `;
 
-const ProfileMembership = styled.a`
+const ProfileMembership = styled.span`
     font-size: 12pt;
 `;
 
@@ -83,18 +80,13 @@ const ProfileDetailContainer = styled.div`
     padding-top: 0.25em;
 `;
 
-const SettingTitle = styled.h1`
-    font-size: 18pt;
-    font-weight: 600;
-    margin: 0.5em;
-`;
-
 const MenuContainer = styled.div`
     display: flex;
     flex-direction: column;
+    width: 95%;
     gap: 0.5em;
     padding: 0.5em 0 0.5em 0;
-    margin: 0.5em 0 0.5em 0;
+    margin: 1em auto 0.5em auto;
     border-radius: 0.75em;
     background-color: #F0F0F0;
     box-shadow: 0 3px 4px #CCCCCC;

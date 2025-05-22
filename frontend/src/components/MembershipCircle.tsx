@@ -33,10 +33,10 @@ const MembershipCircle = (props: {
     )
 }
 
-const Circle = styled.a<{color: string}>`
+const Circle = styled.span<{color: string}>`
     width: 0.75em;
     height: 0.75em;
-    border-radius: 0.325em;
+    border-radius: 0.375em; // width/2
     background-color: ${props => props.color};
     display: inline-block;
     margin: 0 0.25em 0 0.25em;
