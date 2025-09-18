@@ -56,13 +56,13 @@ const PeopleIconImage = styled.img`
 `;
 
 const Title = styled.h1`
-    font-size: 20pt;
+    font-size: 18pt;
     font-weight: 700;
 `
 
 export const AddTeamButton = styled.button`
-    font-size: 14pt;
-    font-weight: 600;
+    font-size: 12pt;
+    font-weight: 500;
     padding: 0.25em 0.5em 0.25em 0.5em;
     background-color: #3287FF;
     color: #FBFBFB;

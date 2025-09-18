@@ -31,8 +31,8 @@ const Card = styled.div`
     align-items: center;
     width: 100%;
     height: 6em;
-    border: 1px solid #898989;
-    box-shadow: 0 3px 3px #BBBBBB;
+    border: 1px solid #d6d6d6ff;
+    box-shadow: 0 2px 3px #BBBBBB;
     border-radius: 0.5em;
 `;
 

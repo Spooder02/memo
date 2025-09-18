@@ -1,24 +1,28 @@
+import React, { useState } from 'react';
 import styled from "styled-components";
 import DayBlock from "./DayBlock";
-
 import { CalendarProps } from "../types/DateFormat";
 import { SimplePlan } from "../types/PlanFormat";
 import simplePlansData from "../assets/SimplePlans.json";
 import DateBlocks from "./DateBlocks";
 import images from "../utils/ImportImages";
+import MonthPickerModal from './MonthPickerModal';
 
 const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
-    const planData: SimplePlan[] = simplePlansData;
+    // --- 상태 관리 ---
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // 오늘의 년, 월
+    // --- 데이터 및 변수 선언 ---
+    const planData: SimplePlan[] = simplePlansData;
     const todayMonth = new Date().getMonth();
     const todayYear = new Date().getFullYear();
-
-    // 캘린더 출력을 위한 변수
     const firstDay = getFirstDayOfMonth(currentDate.month, currentDate.year);
     const totalDays = daysInMonth(currentDate.month, currentDate.year);
     const currentDay = new Date().getDate();
+    const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1);
+    const emptyDays = Array.from({ length: firstDay }, () => null); 
 
+    // --- 핸들러 함수 ---
     const isSameDate = (comparedDate: string, currentDay: number): boolean => {
         const scheduleDate = new Date(comparedDate);
         return (
@@ -26,36 +30,47 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
           scheduleDate.getMonth() === currentDate.month &&
           scheduleDate.getDate() === currentDay
         );
-      }
+    };
       
-
     const changeMonth = (add: boolean) => {
         setCurrentDate(prev => {
             const newMonth = add ? prev.month + 1 : prev.month - 1;
             let newYear = prev.year;
 
-            if (newMonth > 11) { // 12월 넘어갈 때
+            if (newMonth > 11) {
                 newYear += 1;
-                return { year: newYear, month: 0 }; // 1월로 돌아감
-            } else if (newMonth < 0) { // 1월 이전으로 갈 때
+                return { year: newYear, month: 0 };
+            } else if (newMonth < 0) {
                 newYear -= 1;
-                return { year: newYear, month: 11 }; // 12월로 돌아감
+                return { year: newYear, month: 11 };
             }
-
             return { year: newYear, month: newMonth };
         });
-    }
+    };
 
-    const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1);
-    const emptyDays = Array.from({ length: firstDay }, () => null); 
+    const handleMonthSelect = (year: number, month: number) => {
+        setCurrentDate({ year, month });
+        setIsModalOpen(false);
+    };
+
     return (
-        <Frame>
+        <Container>
+            {isModalOpen && (
+                <MonthPickerModal
+                    currentDate={currentDate}
+                    onClose={() => setIsModalOpen(false)}
+                    onSelect={handleMonthSelect}
+                />
+            )}
+
             <MonthTitle>
                 <ChangeDateButton
                     right={false}
                     onClick={() => changeMonth(false)}
                 />
+                <ClickableMonth onClick={() => setIsModalOpen(true)}>
                     {currentDate.year}년 {currentDate.month+1}월
+                </ClickableMonth>
                 <ChangeDateButton
                     right={true}
                     onClick={() => changeMonth(true)}
@@ -63,54 +78,30 @@ const Calendar:React.FC<CalendarProps> = ({ currentDate, setCurrentDate }) => {
             </MonthTitle>
             <CalendarFrame>
                 <DateBlocks/>
-                {
-                    emptyDays.map((_, index) => (
-                        <div key={`empty-${index}`} className="day empty"></div>
-                    ))}
-                {   
-                    daysArray.map((date) => {
-                        const planForDay = planData.find(p =>
-                            isSameDate(p.dayLeft, date)
-                        );
-
-                        return (
-                            <DayBlock
-                                key={date}
-                                date={date}
-                                today={(
-                                    todayYear == currentDate.year &&
-                                    todayMonth == currentDate.month && currentDay == date).valueOf()}
-                                color={planForDay? planForDay.color : undefined}
-                            />
-                        )
-                    })
-                }
+                {emptyDays.map((_, index) => <div key={`empty-${index}`} />)}
+                {daysArray.map((date) => {
+                    const planForDay = planData.find(p => isSameDate(p.dayLeft, date));
+                    return (
+                        <DayBlock
+                            key={date}
+                            date={date}
+                            today={(todayYear === currentDate.year && todayMonth === currentDate.month && currentDay === date)}
+                            color={planForDay? planForDay.color : undefined}
+                        />
+                    )
+                })}
             </CalendarFrame>
-        </Frame>
+        </Container>
     )
 }
 
-const daysInMonth = (month: number, year: number) => {
-    return new Date(year, month + 1, 0).getDate();
-};
+// --- 헬퍼 함수 ---
+const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
+const getFirstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
 
-const getFirstDayOfMonth = (month: number, year: number) => {
-    return new Date(year, month, 1).getDay();
-};
-
-const CalendarFrame = styled.div`
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-`;
-
-const Frame = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 90vw;
-    padding: 1em 0 1em 0;
-    margin: auto;
+// --- Styled Components ---
+const Container = styled.div`
+    margin: 1em 0 1em 0;
 `;
 
 const MonthTitle = styled.p`
@@ -122,6 +113,17 @@ const MonthTitle = styled.p`
     font-size: 18pt;
 `;
 
+const ClickableMonth = styled.span`
+    cursor: pointer;
+    padding: 0.25em 0.5em;
+    border-radius: 0.5em;
+    transition: background-color 0.2s ease-in-out;
+
+    &:hover {
+        background-color: #f0f0f0;
+    }
+`;
+
 const ChangeDateButton = styled.button<{right: boolean}>`
     width: 14px;
     height: 14px;
@@ -130,6 +132,12 @@ const ChangeDateButton = styled.button<{right: boolean}>`
     background-image: url(${images.playbutton});
     background-repeat: no-repeat;
     margin: 0 0.5em 0 0.5em;
+`;
+
+const CalendarFrame = styled.div`
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
 `;
 
 export default Calendar;

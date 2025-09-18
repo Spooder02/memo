@@ -15,7 +15,7 @@ const DateBlock: React.FC<{index: number}> = ({ index }) => {
 const Frame = styled.div`
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     width: 2.75em;
     height: 3em;
 `;

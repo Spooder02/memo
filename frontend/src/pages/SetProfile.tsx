@@ -64,7 +64,9 @@ const SetProfile = () => {
             />
             <CameraButton/>
             </ProfileImageContainer>
-            <NicknameContainer>
+            <ProfileRightContainer>
+                <NicknameLabel>닉네임</NicknameLabel>
+                <NicknameContainer>
                 <NicknameInput
                     type="text"
                     placeholder="닉네임"
@@ -82,10 +84,9 @@ const SetProfile = () => {
                     </ChangeButton>
                 }
             </NicknameContainer>
+            </ProfileRightContainer>
+            
         </ProfileHeaderContainer>
-        <GrayLineDiv
-            style={{margin: "1em 0 1em 0"}}
-        />
         <ProfileDetailsContainer>
             {
             Object.entries(userData)
@@ -119,15 +120,27 @@ const ProfileImageContainer = styled.div`
 const NicknameContainer = styled.div`
     position: relative;
     width: calc(100% - 6em);
-    height: 5em;
+    height: fit-content;
     display: flex;
     align-items: center;
+`;
+
+const ProfileRightContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     padding-left: 2em;
+    gap: 0.5em;
+`;
+
+const NicknameLabel = styled.p`
+    font-size: 14pt;
+    font-weight: 600;
 `;
 
 const NicknameInput = styled.input`
-    width: 75%;
     font-size: 16pt;
+    width: 10em;
     border-bottom: 1px solid #AAAAAA;
     transition: border-bottom 0.2s ease-in-out;
     padding: 0 0 0.1em 0.25em;
@@ -163,8 +176,6 @@ const ProfileDetailsContainer = styled.div`
     gap: 1em;
     padding: 1.5em;
     border-radius: 1em;
-    border: 1px solid #CCCCCC;
-    box-shadow: 0 3px 5px #CCCCCC;
 `;
 
 

@@ -5,15 +5,18 @@ const MenuWithIcon = (props: {
     logoSrc: string;
     menuTitle: string;
     toLink: string;
+    menuDescription: string;
 }) => {
     return (
         <MenuContainer to={props.toLink}>
-            <div style={{display: "flex", gap: "1em"}}>
+            <MenuLeftContainer>
                 <IconImage src={props.logoSrc}/>
-                <MenuTitle>
-                    {props.menuTitle}
-                </MenuTitle>
-            </div>
+                <TitleContainer>
+                    <MenuTitle> {props.menuTitle} </MenuTitle>
+                    <MenuDescription> {props.menuDescription} </MenuDescription>
+                </TitleContainer>
+
+            </MenuLeftContainer>
             <RightArrow>
                 &gt;
             </RightArrow>
@@ -22,13 +25,24 @@ const MenuWithIcon = (props: {
 }
 
 const MenuContainer = styled(Link)`
-    width: 70%;
+    width: 100%;
     height: 3em;
     display: flex;
     align-items: center;
     justify-content: space-between;
     text-decoration: none;
     margin: auto;
+`;
+
+const MenuLeftContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1em;
+`;
+
+const TitleContainer = styled.div`
+    display: flex;
+    flex-direction: column;
 `;
 
 const IconImage = styled.img`
@@ -41,9 +55,15 @@ const MenuTitle = styled.p`
     font-weight: 500;
 `;
 
+const MenuDescription = styled.p`
+    font-size: 12pt;
+    font-weight: 400;
+`;
+
 const RightArrow = styled.p`
     font-size: 14pt;
-    font-weight: 900;
+    font-weight: 400;
+    color: ${props => props.theme.text3};
 `;
 
 export default MenuWithIcon;

@@ -20,7 +20,7 @@ const Menu = styled.button`
     gap: 0.4em;
     border: none;
     cursor: pointer;
-    z-index: 10;
+    z-index: 55;
 `;
 
 const Bar = styled.span<{isOpen: boolean}>`

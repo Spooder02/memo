@@ -1,101 +1,47 @@
-import styled from "styled-components"
+import styled from "styled-components";
 import HamburgerMenu from "./HamburgerMenu";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import images from "../utils/ImportImages";
 
-const Navbar = () => {
+// props 타입 정의
+interface NavbarProps {
+    isOpen: boolean;
+    onMenuClick: () => void;
+}
+
+const Navbar = ({ isOpen, onMenuClick }: NavbarProps) => {
     const navigate = useNavigate();
-    const location = useLocation();
-
-    const [isOpen, setIsOpen] = useState(false);
-    const invertStatus = () => {
-        setIsOpen((prev) => !prev)
-    };
-
-    useEffect(() => {
-        setIsOpen(false);
-    }, [location.pathname]);
 
     return (
-        <>
         <Header>
-            <Logo src={images.memoLogo} onClick={() => navigate('/')}/>
+            <Link to="/">
+                <Logo src={images.memoLogo}/>
+            </Link>
             <HamburgerMenu
                 isOpen={isOpen}
-                onClick={invertStatus}
+                onClick={onMenuClick} // 부모로부터 받은 함수를 사용
             />
         </Header>
-        <HideContainer isOpen={isOpen} onClick={invertStatus}/>
-        <SideMenuContainer isOpen={isOpen}>
-            <MenuContainer>
-                <MenuTitle to={"/"}>
-                    메인 메뉴
-                </MenuTitle>
-                <MenuTitle to={"/myteam"}>나의 팀</MenuTitle>
-                <MenuTitle to={"/registerplan"}>
-                        일정 등록
-                </MenuTitle>
-                <MenuTitle to={"/profile"}>프로필</MenuTitle>
-            </MenuContainer>
-        </SideMenuContainer>
-        </>
     )
 }
 
 const Header = styled.nav`
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100vw;
+    width: 100%;
     height: 3em;
-    z-index: 100;
+    z-index: 60;
     background-color: rgb(255,255,255,0.5);
     padding: 2.5em 1.5em 2em 1.5em;
     border-radius: 0 0 0.25em 0.25em;
-    box-shadow: 0 1px 3px #CCCCCC;
+    box-shadow: 0 1px 5px #eaeaeaff;
 `;
 
 const Logo = styled.img`
     height: 1.5em;
-`;
-
-const HideContainer = styled.div<{isOpen: boolean}>`
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    display: ${(props) => props.isOpen? 'block': 'none'};
-    background-color: #000000;
-    opacity: 0.2;
-    z-index: 5;
-`;
-
-const SideMenuContainer = styled.div<{isOpen: boolean}>`
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 70vw;
-    height: 100vh;
-    background-color: #ffffff;
-    z-index: 5;
-    transform: translateX(${(props) => (props.isOpen ? '0' : '100%')});
-    transition: transform 0.5s ease-in-out;
-
-    padding: 5em 1em 0 1.5em;
-`;
-
-const MenuContainer = styled.div`
-    display: grid;
-    gap: 0.5em;
-`;
-
-
-const MenuTitle = styled(Link)`
-    display: block;
-    font-weight: 500;
-    font-size: 16pt;
+    cursor: pointer;
 `;
 
 export default Navbar;

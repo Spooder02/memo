@@ -7,13 +7,11 @@ export const SmallDropdown = (props:{
         clickEvent: (key: any, option: string) => void
         textSize?: string;
         boxWidth?: string;
-        left?: string;
     }) => {
     return (
         <DropdownContainer
             isOpen={props.isOpen}
             boxWidth={props.boxWidth}
-            left={props.left}
         >
             {
                 props.arr.map((item, index) => {
@@ -34,20 +32,21 @@ export const SmallDropdown = (props:{
     )
 }
 
-const DropdownContainer = styled.div<{isOpen: boolean, boxWidth?: string, left?: string}>`
+const DropdownContainer = styled.div<{isOpen: boolean, boxWidth?: string}>`
     display: ${props => props.isOpen? "flex" : "none"};
     width: ${props => props.boxWidth? props.boxWidth: "150%"};
     max-height: 10em;
-    left: ${props => props.left? props.left: "-1em"};
+    right: 0;
     flex-direction: column;
     position: absolute;
+    top: 100%;
+    margin-top: 0.5em;
     background-color: #FBFBFB;
     border-radius: 0.5em;
-    box-shadow: 1px 1px 3px rgb(180, 180, 180);
+    box-shadow: 1px 1px 10px rgba(238, 238, 238, 1);
     padding: 0.5em;
-    z-index: 1;
+    z-index: 10;
     overflow-y: auto;
-    
 `;
 
 export const DropdownItem = styled.li<{textSize?: string}>`
@@ -58,9 +57,8 @@ export const DropdownItem = styled.li<{textSize?: string}>`
     margin: auto;
     padding: 0.5em 0;
 
-    /* Non-draggable */
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none; /* IE 10 and IE 11 */
+    -webkit-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 
     &:hover {

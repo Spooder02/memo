@@ -1,50 +1,82 @@
 [
     {
         "id": 1,
-        "teamName": "개발팀",
-        "meetingName": "주간 회의",
-        "dayLeft": "2025-04-15T10:00:00Z",
+        "teamName": "전략기획팀",
+        "meetingName": "지난 분기 실적 리뷰",
+        "dayLeft": "2025-08-28T14:00:00Z",
+        "color": "#FFC1CC",
+        "teamScale": 8
+    },
+    {
+        "id": 2,
+        "teamName": "개인",
+        "meetingName": "병원 정기 검진",
+        "dayLeft": "2025-09-11T11:00:00Z",
+        "color": "#B5FFC8",
+        "teamScale": 1
+    },
+    {
+        "id": 3,
+        "teamName": "요가 동호회",
+        "meetingName": "퇴근 후 요가 클래스",
+        "dayLeft": "2025-09-18T18:30:00Z",
+        "color": "#E6D0FF",
+        "teamScale": 12
+    },
+    {
+        "id": 4,
+        "teamName": "동창회",
+        "meetingName": "결혼식 참석 (홍길동)",
+        "dayLeft": "2025-09-20T12:00:00Z",
+        "color": "#FFF5BA",
+        "teamScale": 30
+    },
+    {
+        "id": 5,
+        "teamName": "클라이언트A",
+        "meetingName": "오전: 클라이언트 화상 미팅",
+        "dayLeft": "2025-09-26T10:00:00Z",
         "color": "#B5DBFF",
         "teamScale": 5
     },
     {
-        "id": 2,
-        "teamName": "디자인팀",
-        "meetingName": "프로젝트 브리핑",
-        "dayLeft": "2025-04-20T14:00:00Z",
+        "id": 6,
+        "teamName": "개발팀",
+        "meetingName": "점심: 팀 회식",
+        "dayLeft": "2025-09-26T13:00:00Z",
         "color": "#B5FFC8",
-        "teamScale": 2
-    },
-    {
-        "id": 3,
-        "teamName": "마케팅팀",
-        "meetingName": "캠페인 전략 회의",
-        "dayLeft": "2025-04-25T09:00:00Z",
-        "color": "#FFC1CC",
-        "teamScale": 3
-    },
-    {
-        "id": 4,
-        "teamName": "온라인팀",
-        "meetingName": "온라인 전략 회의",
-        "dayLeft": "2025-04-25T10:00:00Z",
-        "color": "#B5DBFF",
-        "teamScale": 3
-    },
-    {
-        "id": 5,
-        "teamName": "인사팀",
-        "meetingName": "연봉 협상",
-        "dayLeft": "2025-05-01T11:00:00Z",
-        "color": "#FFF5BA",
         "teamScale": 6
     },
     {
-        "id": 5,
-        "teamName": "운영팀",
-        "meetingName": "월간 보고서",
-        "dayLeft": "2025-05-10T16:00:00Z",
+        "id": 7,
+        "teamName": "독서 스터디",
+        "meetingName": "저녁: 스터디 정기 모임",
+        "dayLeft": "2025-09-26T19:00:00Z",
         "color": "#E6D0FF",
+        "teamScale": 4
+    },
+    {
+        "id": 8,
+        "teamName": "등산 동호회",
+        "meetingName": "개천절 기념 관악산 등반",
+        "dayLeft": "2025-10-03T09:00:00Z",
+        "color": "#FFC1CC",
+        "teamScale": 15
+    },
+    {
+        "id": 9,
+        "teamName": "전사 전략기획 및 신사업개발팀",
+        "meetingName": "2026년 상반기 사업계획 수립을 위한 전체 워크숍",
+        "dayLeft": "2025-10-15T09:30:00Z",
+        "color": "#FFF5BA",
+        "teamScale": 18
+    },
+    {
+        "id": 10,
+        "teamName": "가족",
+        "meetingName": "새해 해돋이 여행",
+        "dayLeft": "2026-01-01T07:00:00Z",
+        "color": "#B5DBFF",
         "teamScale": 4
     }
 ]
