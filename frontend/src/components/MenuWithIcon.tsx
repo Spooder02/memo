@@ -1,69 +1,71 @@
+// src/components/MenuWithIcon.tsx
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import images from "../utils/ImportImages";
 
-const MenuWithIcon = (props: {
+interface MenuWithIconProps {
     logoSrc: string;
     menuTitle: string;
-    toLink: string;
     menuDescription: string;
-}) => {
-    return (
-        <MenuContainer to={props.toLink}>
-            <MenuLeftContainer>
-                <IconImage src={props.logoSrc}/>
-                <TitleContainer>
-                    <MenuTitle> {props.menuTitle} </MenuTitle>
-                    <MenuDescription> {props.menuDescription} </MenuDescription>
-                </TitleContainer>
-
-            </MenuLeftContainer>
-            <RightArrow>
-                &gt;
-            </RightArrow>
-        </MenuContainer>
-    )
+    toLink: string;
 }
 
-const MenuContainer = styled(Link)`
-    width: 100%;
-    height: 3em;
+const MenuWithIcon = ({ logoSrc, menuTitle, menuDescription, toLink }: MenuWithIconProps) => {
+    return (
+        <MenuWrapper to={toLink}>
+            <Icon src={logoSrc} />
+            <TextWrapper>
+                <Title>{menuTitle}</Title>
+                <Description>{menuDescription}</Description>
+            </TextWrapper>
+            <ArrowIcon src={images.playbutton} />
+        </MenuWrapper>
+    );
+};
+
+// --- Styled Components ---
+
+const MenuWrapper = styled(Link)`
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    text-decoration: none;
-    margin: auto;
+    padding: 0.75em 0.5em;
+    border-radius: 0.5em;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: ${props => props.theme.bg_element2};
+    }
 `;
 
-const MenuLeftContainer = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1em;
+const Icon = styled.img`
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 1em;
+    filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
 
-const TitleContainer = styled.div`
+const TextWrapper = styled.div`
+    flex: 1;
     display: flex;
     flex-direction: column;
 `;
 
-const IconImage = styled.img`
-    width: 2em;
-    height: 2em;
-`;
-
-const MenuTitle = styled.p`
-    font-size: 14pt;
+const Title = styled.p`
+    font-size: 13pt;
     font-weight: 500;
+    color: ${props => props.theme.text1};
+    margin-bottom: 0.1em;
 `;
 
-const MenuDescription = styled.p`
-    font-size: 12pt;
-    font-weight: 400;
+const Description = styled.p`
+    font-size: 10pt;
+    color: ${props => props.theme.text2};
 `;
 
-const RightArrow = styled.p`
-    font-size: 14pt;
-    font-weight: 400;
-    color: ${props => props.theme.text3};
+const ArrowIcon = styled.img`
+    width: 1em;
+    height: 1em;
+    filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
 
 export default MenuWithIcon;

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "mimo",
+    "nickname": "미모",
+    "profileImg": "images/testProfile.png"
+  },
+  {
+    "id": "user2",
+    "nickname": "동료A",
+    "profileImg": "images/groupicon.png"
+  },
+  {
+    "id": "user3",
+    "nickname": "친구B",
+    "profileImg": "images/groupicon.png"
+  }
+]

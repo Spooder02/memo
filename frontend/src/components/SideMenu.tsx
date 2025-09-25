@@ -51,7 +51,7 @@ const ThemeToggleButton = styled.button`
 const ThemeToggle = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     return (
-        <ThemeToggleButton onClick={toggleTheme} disabled={true}>
+        <ThemeToggleButton onClick={toggleTheme} disabled={false}>
             {theme === 'light' ? '🌙 다크모드 전환 (개발중)' : '☀️ 라이트모드 전환 (개발중)'}
         </ThemeToggleButton>
     );

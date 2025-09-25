@@ -16,7 +16,7 @@ const DayBlock = (props: {
             </DateNum>
             {
                 color ?
-                <DetailCircle color={props.color!}/> : <div /> // 원이 없을 때도 grid 구조 유지를 위해 빈 div 추가
+                <DetailCircle color={props.color!}/> : <div />
             }
         </Frame>
     )
@@ -26,21 +26,27 @@ const DayBlock = (props: {
 
 const Frame = styled.button<{today: boolean}>`
     display: grid;
-    /* 세로 공간을 2:1 비율로 분할하여 숫자와 원의 공간을 명확히 분리 */
     grid-template-rows: 2fr 1fr;
-    align-items: center;     /* 각 행의 아이템을 세로 중앙 정렬 */
-    justify-items: center;   /* 각 행의 아이템을 가로 중앙 정렬 */
+    align-items: center;
+    justify-items: center;
+    padding: 0;
     
-    width: 3em;
-    height: 3em;
-    padding: 0; /* 내부에서 정렬하므로 패딩 제거 */
-    border-radius: 1.5em;
-    background-color:${(props) => props.today? 'rgb(43, 135, 255)':'#ffffff'};
+    /* --- 사이즈 수정 부분 --- */
+    width: 100%; /* 부모 grid의 칸을 가득 채움 */
+    aspect-ratio: 1 / 1; /* 너비에 맞춰 높이가 1:1 비율을 유지 (정사각형) */
+    border-radius: 50%; /* 어떤 크기에서든 원형을 유지 */
+    
+    background-color: ${(props) => props.today ? props.theme.accent : props.theme.bg_element1};
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: ${(props) => props.today ? props.theme.accent : props.theme.bg_element2};
+    }
 `;
 
 const DateNum = styled.p<{today: boolean}>`
-    margin: 0; /* p 태그의 기본 마진 제거 */
-    color: ${(props) => props.today? '#ffffff':'#000000'};
+    margin: 0;
+    color: ${(props) => props.today ? '#ffffff' : props.theme.text1};
     font-size: 12pt;
 `;
 
@@ -49,9 +55,7 @@ const DetailCircle = styled.div<{color: string}>`
     height: 7px;
     border-radius: 50%;
     background-color: ${(props) => props.color};
-    
-    /* 흰색 배경에서 잘 보이도록 어두운 테두리 추가 */
-    box-shadow: 0 0 4px #cacaca;
+    border: 1px solid ${props => props.theme.border1};
 `;
 
 export default DayBlock;

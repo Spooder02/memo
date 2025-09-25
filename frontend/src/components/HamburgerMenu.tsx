@@ -16,23 +16,24 @@ const HamburgerMenu = (props:
 const Menu = styled.button`
     padding: 0.25em;
     display: grid;
+    align-items: center;
     justify-items: center;
-    gap: 0.4em;
-    border: none;
-    cursor: pointer;
     z-index: 55;
 `;
 
 const Bar = styled.span<{isOpen: boolean}>`
-    height: 0.3em;
-    width: 2em;
+    grid-area: 1 / 1 / 2 / 2;
+    height: 5px;
+    width: 34px;
     border-radius: 2em;
-    background-color: black;
+    background-color: ${props => props.theme.text1};
 
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
 
     &:nth-of-type(1) {
-        transform: ${({ isOpen }) => (isOpen ? 'rotate(45deg) translateY(0.6em) translateX(0.5em) scaleX(1.3)' : 'rotate(0) translateY(0)')};
+        transform: ${({ isOpen }) => 
+            isOpen ? 'rotate(45deg)' : 'translateY(-12px)'
+        };
     }
 
     &:nth-of-type(2) {
@@ -40,7 +41,9 @@ const Bar = styled.span<{isOpen: boolean}>`
     }
 
     &:nth-of-type(3) {
-        transform: ${({ isOpen }) => (isOpen ? 'rotate(-45deg) translateY(-0.5em) translateX(0.3em) scaleX(1.35)' : 'rotate(0) translateY(0)')};
+        transform: ${({ isOpen }) => 
+            isOpen ? 'rotate(-45deg)' : 'translateY(12px)'
+        };
     }
 `;
 

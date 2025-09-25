@@ -4,11 +4,9 @@ import images from "../utils/ImportImages";
 import MembershipCircle from "../components/MembershipCircle";
 import { Membership } from "../types/Membership";
 import { useState } from "react";
-// import { GrayLineDiv } from "./Mainpage"; // GrayLineDiv는 여기서 더 이상 필요하지 않음
 import MenuWithIcon from "../components/MenuWithIcon";
 
 const MyProfilePage = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [membershipType, setMembershipType] = useState<Membership>("Pro");
     return (
         <PageWrapper>
@@ -29,10 +27,6 @@ const MyProfilePage = () => {
                 </ProfileDetailContainer>
             </ProfileHeaderContainer>
 
-            {/* Spacer를 사용하여 메뉴를 하단으로 밀어냄 */}
-            <Spacer /> 
-
-            {/* 메뉴 컨테이너: 패딩, 마진 조정 및 테마 색상 적용 */}
             <MenuContainer>
                 <SettingTitle>설정 및 관리</SettingTitle>
                 <MenuWithIcon
@@ -76,57 +70,52 @@ const PageWrapper = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    flex: 1; /* Layout에서 제공하는 높이를 모두 채움 */
-    padding-bottom: 1.5em; /* 하단 메뉴와의 여유 공간 */
-`;
-
-const Spacer = styled.div`
-  flex: 1; /* 프로필과 메뉴 사이의 모든 빈 공간을 차지하여 메뉴를 하단으로 밀어냄 */
-`;
-
-const SettingTitle = styled.p`
-    font-size: 16pt;
-    font-weight: 600;
+    flex: 1;
+    padding: 1em; /* 페이지 전체에 여백 추가 */
 `;
 
 export const ProfileHeaderContainer = styled.header`
     display: flex;
-    align-items: center; /* 이미지와 텍스트를 수직 중앙 정렬 */
-    padding: 1.5em 1em; /* 상하좌우 여백 증가 */
-    margin-bottom: 1em; /* 하단 간격 추가 */
-    background-color: ${props => props.theme.bg_element1}; /* 테마 배경색 적용 */
-    box-shadow: 0 2px 5px ${props => props.theme.shadow1}; /* 은은한 그림자 */
-    border-radius: 0.75em; /* 모서리 둥글게 */
+    align-items: center;
+    padding: 1.5em 1em;
+    background-color: ${props => props.theme.bg_element2}; /* 메뉴와 통일감을 주기 위해 bg_element2 사용 */
+    border-radius: 0.75em;
 `;
 
 const ProfileDetailContainer = styled.div`
     display: flex;
-    flex-direction: column; /* 제목과 멤버십 텍스트 수직 배치 */
+    flex-direction: column;
     justify-content: center;
 `;
 
 const ProfileTitle = styled.h1`
     font-size: 18pt;
     font-weight: 700;
-    color: ${props => props.theme.text1}; /* 테마 텍스트 색상 적용 */
-    margin: 0 0 0.2em 0; /* 아래쪽 마진 조정 */
+    color: ${props => props.theme.text1};
+    margin: 0 0 0.2em 0;
 `;
 
 const ProfileMembership = styled.span`
     font-size: 12pt;
-    color: ${props => props.theme.text2}; /* 테마 보조 텍스트 색상 적용 */
+    color: ${props => props.theme.text2};
     display: flex;
     align-items: center;
-    gap: 0.5em; /* MembershipCircle과의 간격 */
+    gap: 0.5em;
 `;
 
 const MenuContainer = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1.5em;
-    padding: 1em;
-    margin: 0 1em; /* 좌우 여백을 일관되게 조정 */
-    border-radius: 0.75em;
+    gap: 0.5em; /* 메뉴 간 간격 조정 */
+    margin-top: 2em; /* 프로필 영역과의 간격 */
+`;
+
+const SettingTitle = styled.p`
+    font-size: 14pt;
+    font-weight: 600;
+    color: ${props => props.theme.text1};
+    padding: 0 0.5em;
+    margin-bottom: 0.5em;
 `;
 
 export default MyProfilePage;

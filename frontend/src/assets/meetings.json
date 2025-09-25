@@ -1,0 +1,39 @@
+[
+  {
+    "meetingId": "mt-123",
+    "teamId": "team-likelion",
+    "meetingName": "10월 정기 전체 회의",
+    "status": "CONFIRMING", 
+    "proposals": [
+      {
+        "userId": "mimo",
+        "times": [540, 555, 600, 780, 795, 810]
+      },
+      {
+        "userId": "user2",
+        "times": [540, 600, 630, 780, 810, 840, 1080]
+      }
+    ]
+  },
+  {
+    "meetingId": "mt-456",
+    "teamId": "team-sideproject",
+    "meetingName": "신규 기능 기획",
+    "status": "PROPOSING",
+    "proposals": [
+      {
+        "userId": "user3",
+        "times": [1080, 1140, 1200]
+      }
+    ]
+  },
+  {
+    "meetingId": "mt-789",
+    "teamId": "team-likelion",
+    "meetingName": "프로젝트 중간 발표",
+    "status": "CONFIRMED",
+    "dayLeft": "2025-09-29T14:00:00Z",
+    "color": "#B5DBFF",
+    "teamScale": 36
+  }
+]

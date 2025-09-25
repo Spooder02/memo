@@ -55,7 +55,6 @@ const MonthPickerModal: React.FC<ModalProps> = ({ currentDate, onClose, onSelect
     );
 };
 
-// --- Styled Components ---
 const ModalOverlay = styled.div`
     position: fixed;
     top: 0;
@@ -70,12 +69,13 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-    background-color: white;
+    background-color: ${props => props.theme.bg_element1};
+    color: ${props => props.theme.text1};
     padding: 1.5em;
     border-radius: 1em;
     width: 90%;
     max-width: 350px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow1};
 `;
 
 const HeaderContainer = styled.div`
@@ -88,7 +88,6 @@ const HeaderContainer = styled.div`
 
 const CloseButton = styled.button`
     position: absolute;
-    width: 1em;
     top: 50%;
     right: 0;
     transform: translateY(-50%);
@@ -96,12 +95,12 @@ const CloseButton = styled.button`
     border: none;
     font-size: 1.7rem;
     line-height: 1;
-    color: #888;
+    color: ${props => props.theme.text4};
     cursor: pointer;
     padding: 0;
     
     &:hover {
-        color: #000;
+        color: ${props => props.theme.text1};
     }
 `;
 
@@ -115,7 +114,7 @@ const ModalHeader = styled.div`
 
 const YearText = styled.span`
     text-align: center;
-    margin: 0 1em; /* 화살표와의 간격 */
+    margin: 0 1em;
 `;
 
 const ArrowButton = styled.button<{right?: boolean}>`
@@ -126,6 +125,7 @@ const ArrowButton = styled.button<{right?: boolean}>`
     background-image: url(${images.playbutton});
     background-repeat: no-repeat;
     background-position: center;
+    filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
 
 const MonthGrid = styled.div`
@@ -138,13 +138,14 @@ const MonthButton = styled.button<{isSelected: boolean}>`
     padding: 0.75em 0.5em;
     font-size: 11pt;
     border-radius: 0.5em;
-    background-color: ${props => props.isSelected ? '#B5DBFF' : '#f0f0f0'};
-    color: ${props => props.isSelected ? 'white' : 'black'};
     font-weight: ${props => props.isSelected ? 'bold' : 'normal'};
-    transition: background-color 0.2s;
+    transition: filter 0.2s, background-color 0.2s, color 0.2s;
+    
+    background-color: ${props => props.isSelected ? props.theme.accent : props.theme.bg_element2};
+    color: ${props => props.isSelected ? '#FFFFFF' : props.theme.text1};
 
     &:hover {
-        background-color: ${props => props.isSelected ? '#9ACFFF' : '#e0e0e0'};
+        filter: brightness(0.95);
     }
 `;
 

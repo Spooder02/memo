@@ -41,9 +41,10 @@ const DropdownContainer = styled.div<{isOpen: boolean, boxWidth?: string}>`
     position: absolute;
     top: 100%;
     margin-top: 0.5em;
-    background-color: #FBFBFB;
+    background-color: ${props => props.theme.bg_element1};
+    border: 1px solid ${props => props.theme.border1};
     border-radius: 0.5em;
-    box-shadow: 1px 1px 10px rgba(238, 238, 238, 1);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow1};
     padding: 0.5em;
     z-index: 10;
     overflow-y: auto;
@@ -53,16 +54,18 @@ export const DropdownItem = styled.li<{textSize?: string}>`
     font-size: ${props => props.textSize? props.textSize: ""};
     list-style-type: none;
     text-align: center;
-    width: fit-content;
+    width: 100%; /* 너비를 100%로 설정하여 호버 영역을 넓힘 */
     margin: auto;
     padding: 0.5em 0;
+    color: ${props => props.theme.text1};
+    border-radius: 0.25em; /* 호버 시 자연스럽도록 미리 radius 설정 */
+    transition: background-color 0.2s;
 
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
 
     &:hover {
-        background-color: #E0E0E0;
-        border-radius: 0.5em;
+        background-color: ${props => props.theme.bg_element2};
     }
 `;

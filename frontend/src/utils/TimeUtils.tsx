@@ -5,6 +5,10 @@
  */
 export const formatTime = (time: number): string => {
     if (time === 0 || time === 720) return "12:00";
+    if (time === 15 || time === 735) return "12:15";
+    if (time === 30 || time === 750) return "12:30";
+    if (time === 45 || time === 765) return "12:45";
+    
     const hours = Math.floor(time / 60);
     const minutes = time % 60;
     const formattedHours = hours.toString().padStart(2, '0');

@@ -64,7 +64,7 @@ const WeekSelectorModal: React.FC<WeekSelectorModalProps> = ({ isOpen, onClose, 
     );
 };
 
-export default WeekSelectorModal;
+// --- Styled Components ---
 
 const ModalOverlay = styled.div`
     position: fixed;
@@ -80,12 +80,13 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-    background-color: white;
+    background-color: ${props => props.theme.bg_element1};
+    color: ${props => props.theme.text1};
     padding: 1.5em;
     border-radius: 1em;
     width: 90%;
     max-width: 400px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px ${props => props.theme.shadow1};
     display: flex;
     flex-direction: column;
     gap: 1em;
@@ -100,11 +101,9 @@ const ModalHeader = styled.div`
 `;
 
 const ArrowButton = styled.button`
-    background: none;
-    border: none;
     font-size: 1.5em;
     cursor: pointer;
-    color: #555;
+    color: ${props => props.theme.text2};
 `;
 
 const YearText = styled.span`
@@ -116,7 +115,9 @@ const MonthSelector = styled.select`
     width: 100%;
     padding: 0.5em;
     border-radius: 0.5em;
-    border: 1px solid #ccc;
+    background-color: ${props => props.theme.bg_element2};
+    color: ${props => props.theme.text1};
+    border: 1px solid ${props => props.theme.border1};
     font-size: 12pt;
 `;
 
@@ -129,23 +130,31 @@ const WeekGrid = styled.div`
 const WeekItem = styled.div`
     padding: 0.75em;
     text-align: center;
-    background-color: #f0f0f0;
+    background-color: ${props => props.theme.bg_element2};
+    color: ${props => props.theme.text1};
     border-radius: 0.5em;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: filter 0.2s;
 
     &:hover {
-        background-color: #e0e0e0;
+        filter: brightness(0.95);
     }
 `;
 
 const CloseButton = styled.button`
     padding: 0.75em 1em;
-    border: none;
-    background-color: #2693FF;
+    background-color: ${props => props.theme.accent};
     color: white;
     font-size: 12pt;
+    font-weight: 500;
     border-radius: 0.5em;
     cursor: pointer;
     margin-top: 0.5em;
+    transition: filter 0.2s;
+
+    &:hover {
+        filter: brightness(0.9);
+    }
 `;
+
+export default WeekSelectorModal;

@@ -111,6 +111,7 @@ const MonthTitle = styled.p`
     align-items: center;
     font-weight: 600;
     font-size: 18pt;
+    color: ${props => props.theme.text1};
 `;
 
 const ClickableMonth = styled.span`
@@ -120,7 +121,7 @@ const ClickableMonth = styled.span`
     transition: background-color 0.2s ease-in-out;
 
     &:hover {
-        background-color: #f0f0f0;
+        background-color: ${props => props.theme.bg_element2};
     }
 `;
 
@@ -132,6 +133,10 @@ const ChangeDateButton = styled.button<{right: boolean}>`
     background-image: url(${images.playbutton});
     background-repeat: no-repeat;
     margin: 0 0.5em 0 0.5em;
+    transition: filter 0.2s;
+
+    /* 다크모드일 때 아이콘 색상을 반전시킴 */
+    filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
 
 const CalendarFrame = styled.div`

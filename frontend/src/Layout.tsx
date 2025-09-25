@@ -80,7 +80,7 @@ const AppFrame = styled.div`
 const Content = styled.main`
   flex: 1; 
   overflow-y: auto;
-  padding: 0.5em 1em 0.5em 1em;
+  padding: 15px 20px 15px 20px;
 `;
 
 const HideContainer = styled.div<{isOpen: boolean}>`

@@ -1,213 +1,199 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useParams } from 'react-router-dom';
 import DateBlocks from '../components/DateBlocks';
 import DayBlock from '../components/DayBlock';
-import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
 import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
-import { TimeSelectionObject } from '../types/TimeSelectionObject';
-import { TimeSelectionDate } from '../types/DateFormat';
-import { formatTime, getMonth, getWeekDates, groupAndFormatTimes, getWeekInfo } from '../utils/TimeUtils';
+import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
+import { TimeSelectionObject, RegisterPlanDetails } from '../types/TimeSelectionObject';
+import { formatTime, getWeekDates, groupAndFormatTimes, getWeekInfo } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
 import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
 import CheckModal from '../components/CheckModal';
 import WeekSelectorModal from '../components/WeekSelectorModal';
+import teamsData from '../assets/teams.json';
+
+type Availability = {
+    [day: number]: {
+        times: Set<number>;
+        details: Partial<RegisterPlanDetails>;
+    }
+}
+
+type DropdownOptionsType = "timeDiv" | "timeFilter" | "selectedTime" | "priority" | "disclosureRange" | "availableChannel";
+
 
 const RegisterPlan: React.FC = () => {
+    const { meetingId } = useParams<{ meetingId: string }>();
+    const isProposalMode = !!meetingId;
+
     // --- 상태 관리 ---
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<number | null>(null);
+    const [selectedTimes, setSelectedTimes] = useState<Set<number>>(new Set());
+    const [availability, setAvailability] = useState<Availability>({});
+    
     const [isWeekModalOpen, setIsWeekModalOpen] = useState(false);
-    const { week, month } = getWeekInfo(currentDate);
-
-    const [TimeObject, setTimeObject] = useState<TimeSelectionObject[]>([]);
-    const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
-    const [weekDates, setWeekDates] = useState<number[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedDates, setSelectedDates] = useState<number|null>();
-
-    const [dropdownStates, setDropdownStates] = useState<DropdownStatesWithOptions>({
+    const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
+    
+    const [dropdownStates, setDropdownStates] = useState<{[key in DropdownOptionsType]: DropdownItemState}>({
         timeDiv: { isOpen: false, options: timeDivOptions, selectedValue: timeDivOptions[0] },
         timeFilter: { isOpen: false, options: timeFilterOptions, selectedValue: timeFilterOptions[1] },
         selectedTime: { isOpen: false, options: ["선택된 시간 전체"], selectedValue: "선택된 시간 전체" },
-        disclosureRange: { isOpen: false, options: ["임의의 팀"], selectedValue: "임의의 팀" },
+        disclosureRange: { isOpen: false, options: ["전체 공개"], selectedValue: "전체 공개" },
         priority: { isOpen: false, options: priorityOptions, selectedValue: priorityOptions[0] },
         availableChannel: { isOpen: false, options: availableChannelOptions, selectedValue: availableChannelOptions[0] }
     });
+    
+    const { week, month } = getWeekInfo(currentDate);
+    const weekDates = getWeekDates(currentDate);
 
-    // --- 핸들러 및 로직 ---
+    // --- 데이터 로딩 및 동적 옵션 생성 ---
     useEffect(() => {
-        setWeekDates(getWeekDates(currentDate));
-    }, [currentDate]);
+        const currentUserId = "mimo";
+        const myTeams = teamsData.filter(team => team.teammates.includes(currentUserId));
+        const myTeamNames = myTeams.map(team => team.teamName);
+        setDropdownStates(prev => ({
+            ...prev,
+            disclosureRange: { ...prev.disclosureRange, options: ["전체 공개", ...myTeamNames] }
+        }));
+    }, []);
 
-    const toggleAndCloseModal = () => setIsModalOpen(prev => !prev);
+    useEffect(() => {
+        if (!selectedDate) return;
+        const sortedTimes = Array.from(selectedTimes).sort((a, b) => a - b);
+        const timeGap = dropdownStates.timeFilter.selectedValue === '1시간마다' ? 60 : (dropdownStates.timeFilter.selectedValue === '30분마다' ? 30 : 15);
+        const formattedSelectedTimes = groupAndFormatTimes(sortedTimes, timeGap);
+        setDropdownStates(prev => ({
+            ...prev,
+            selectedTime: { ...prev.selectedTime, options: ["선택된 시간 전체", ...formattedSelectedTimes], selectedValue: "선택된 시간 전체" }
+        }));
+    }, [selectedTimes, dropdownStates.timeFilter.selectedValue, selectedDate]);
 
-    const handleWeekChange = (newDate: Date) => {
-        setCurrentDate(newDate);
-        setSelectedDates(null);
-        setIsWeekModalOpen(false);
+
+    // --- 핸들러 함수 ---
+    const handleDateSelect = (date: number) => {
+        setSelectedDate(date);
+        const existingData = availability[date];
+        setSelectedTimes(existingData ? existingData.times : new Set());
+        if (existingData?.details) {
+            setDropdownStates(prev => ({
+                ...prev,
+                priority: { ...prev.priority, selectedValue: existingData.details.priority || priorityOptions[0] },
+                disclosureRange: { ...prev.disclosureRange, selectedValue: existingData.details.disclosureRange || "전체 공개" },
+                availableChannel: { ...prev.availableChannel, selectedValue: existingData.details.availableChannel || availableChannelOptions[0] },
+                selectedTime: { ...prev.selectedTime, selectedValue: existingData.details.selectedTime || "선택된 시간 전체" }
+            }));
+        }
+    };
+    
+    const handleTimeChange = (time: number) => {
+        if (!selectedDate) { alert("[경고] 날짜를 먼저 선택해주세요!"); return; }
+        const newTimes = new Set(selectedTimes);
+        newTimes.has(time) ? newTimes.delete(time) : newTimes.add(time);
+        setSelectedTimes(newTimes);
+        setAvailability(prev => ({
+            ...prev,
+            [selectedDate]: {
+                times: newTimes,
+                details: prev[selectedDate]?.details || {}
+            }
+        }));
     };
 
-    const toggleDropdown = (dropdownKey: dropdownOptions) => {
+    const handleDetailChange = (key: keyof RegisterPlanDetails, value: string) => {
+        if (!selectedDate) return;
+        setDropdownStates(prev => ({ ...prev, [key as DropdownOptionsType]: { ...prev[key as DropdownOptionsType], selectedValue: value, isOpen: false } }));
+        setAvailability(prev => ({
+            ...prev,
+            [selectedDate]: {
+                times: prev[selectedDate]?.times || new Set(),
+                details: { ...prev[selectedDate]?.details, [key]: value }
+            }
+        }));
+    };
+
+    const toggleDropdown = (dropdownKey: DropdownOptionsType) => {
         setDropdownStates(prev => {
             const isOpening = !prev[dropdownKey].isOpen;
             const closedState = Object.fromEntries(
-                Object.keys(prev).map(key => [ key, { ...prev[key as dropdownOptions], isOpen: false }])
-            ) as DropdownStatesWithOptions;
+                Object.keys(prev).map(key => [ key, { ...prev[key as DropdownOptionsType], isOpen: false }])
+            ) as {[key in DropdownOptionsType]: DropdownItemState};
             return { ...closedState, [dropdownKey]: { ...prev[dropdownKey], isOpen: isOpening } };
         });
     };
 
-    const selectOption = (dropdownKey: dropdownOptions, value: string) => {
-        setDropdownStates(prev => ({ ...prev, [dropdownKey]: { ...prev[dropdownKey], selectedValue: value, isOpen: false } }));
-    };
-
-    useEffect(() => {
-        if (selectedDates) {
-            const newSelectedDateObject: TimeSelectionDate = {
-                year: currentDate.getFullYear(),
-                month: month,
-                day: selectedDates!,
-            };
-
-            const sortedTimes = [...selectedTimes].sort((a, b) => a - b);
-            const timeGap = () => {
-                if (dropdownStates.timeFilter.selectedValue === "30분마다") return 30;
-                if (dropdownStates.timeFilter.selectedValue === "1시간마다") return 60;
-                return 15;
-            };
-
-            const formattedSelectedTimes = groupAndFormatTimes(sortedTimes, timeGap());
-            setDropdownStates(prev => ({
-                ...prev,
-                selectedTime: {
-                    ...prev.selectedTime,
-                    options: ["선택된 시간 전체"].concat(formattedSelectedTimes),
-                    selectedValue: "선택된 시간 전체"
-                }
-            }));
-        
-            setTimeObject(prevTimeObject => {
-                const newTimeObject = [...prevTimeObject];
-                const prevIndex = newTimeObject.findIndex(obj => 
-                    obj.date.day === selectedDates && obj.date.month === month && obj.date.year === currentDate.getFullYear()
-                );
-                const newObject: TimeSelectionObject = {  
-                    date: newSelectedDateObject,
-                    times: selectedTimes,
-                    details: {
-                        selectedTime: dropdownStates.selectedTime.selectedValue,
-                        priority: dropdownStates.priority.selectedValue,
-                        disclosureRange: dropdownStates.disclosureRange.selectedValue,
-                        availableChannel: dropdownStates.availableChannel.selectedValue,
-                        description: ""
-                    }
-                };
-                if (prevIndex === -1) {
-                    newTimeObject.push(newObject);
-                } else {
-                    newTimeObject[prevIndex] = newObject;
-                }
-                return newTimeObject;
-            });
-        }
-    }, [selectedDates, selectedTimes, currentDate, dropdownStates.timeFilter.selectedValue, dropdownStates.priority.selectedValue, dropdownStates.disclosureRange.selectedValue, dropdownStates.availableChannel.selectedValue, month, dropdownStates.selectedTime.selectedValue]);
-
-    useEffect(() => {
-        const prevIndex = TimeObject.findIndex(obj => 
-            obj.date.day === selectedDates && obj.date.month === month && obj.date.year === currentDate.getFullYear()
-        );
-        setSelectedTimes(prevIndex === -1 ? [] : TimeObject[prevIndex].times);
-    }, [selectedDates, currentDate, TimeObject, month]);
-
     const submitPlan = () => {
-        const prevIndex = TimeObject.findIndex(obj => 
-            obj.date.day === selectedDates && obj.date.month === month && obj.date.year === currentDate.getFullYear()
-        );
-        if (prevIndex !== -1) {
-            console.log(TimeObject[prevIndex]);
-            toggleAndCloseModal();
-            setTimeout(() => toggleAndCloseModal(), 3000);
-        } else {
-            alert("[오류] 날짜와 일정을 선택하세요!");
+        console.log("SUBMITTING DATA:", availability);
+        if (Object.keys(availability).length === 0) {
+            alert("[오류] 등록할 일정을 선택하세요!");
+            return;
         }
+        setIsCheckModalOpen(true);
+        setTimeout(() => setIsCheckModalOpen(false), 3000);
     };
-
-    // --- 렌더링 로직: 파생 변수 생성 ---
+    
     const baseTimes = Array.from({ length: 48 }, (_, index) => index * 15);
-    const displayTimes = dropdownStates.timeDiv.selectedValue === '오후'
-        ? baseTimes.map(t => t + 720)
-        : baseTimes;
+    const displayTimes = dropdownStates.timeDiv.selectedValue === '오후' ? baseTimes.map(t => t + 720) : baseTimes;
 
     return (
         <PageContainer>
-            <CheckModal title='저장 완료' desc='일정이 저장되었습니다' isToggle={isModalOpen} />
-            <WeekSelectorModal
-                isOpen={isWeekModalOpen}
-                onClose={() => setIsWeekModalOpen(false)}
-                currentDate={currentDate}
-                onWeekSelect={handleWeekChange}
-            />
+            <CheckModal title={isProposalMode ? '제출 완료' : '저장 완료'} desc={isProposalMode ? '미팅 가능 시간이 제출되었습니다.' : '일정이 저장되었습니다.'} isToggle={isCheckModalOpen} />
+            <WeekSelectorModal isOpen={isWeekModalOpen} onClose={() => setIsWeekModalOpen(false)} currentDate={currentDate} onWeekSelect={(newDate) => {setCurrentDate(newDate); setIsWeekModalOpen(false);}} />
 
-            <ClickableTimeTitle onClick={() => setIsWeekModalOpen(true)}>
-                {`${month}월 ${week}주차 `} &gt;
-            </ClickableTimeTitle>
+            {!isProposalMode && (
+                <ClickableTimeTitle onClick={() => setIsWeekModalOpen(true)}>
+                    {`${month}월 ${week}주차 `} &gt;
+                </ClickableTimeTitle>
+            )}
 
-            <Title>미팅 가능 시간을 선택해주세요!</Title>
+            <Title>{isProposalMode ? '미팅 가능 시간 등록' : '미팅 가능 시간을 선택해주세요!'}</Title>
 
             <WeekCalendarContainer>
                 <DateBlocks/>
-                {weekDates.map((date, index) => (
+                {weekDates.map((date) => (
                     <DayBlock
-                        key={`${month}-${date}-${index}`}
+                        key={`${month}-${date}`}
                         date={date}
-                        today={(date === selectedDates)}
-                        color={undefined}
-                        onClick={() => setSelectedDates(date)}
+                        today={(date === selectedDate)}
+                        color={availability[date]?.times.size > 0 ? '#B5DBFF' : undefined}
+                        onClick={() => handleDateSelect(date)}
                     />
                 ))}
             </WeekCalendarContainer>
 
             <TimeDivContainer>
-                <DropdownContainer>
+                 <DropdownContainer>
                     <TimeDivTitle>
                         {dropdownStates.timeDiv.selectedValue}
                         <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeDiv.isOpen} onClick={() => toggleDropdown('timeDiv')} />
                     </TimeDivTitle>
-                    <SmallDropdown arr={dropdownStates.timeDiv.options} isOpen={dropdownStates.timeDiv.isOpen} dropdownKey="timeDiv" clickEvent={selectOption} />
+                    <SmallDropdown arr={dropdownStates.timeDiv.options} isOpen={dropdownStates.timeDiv.isOpen} dropdownKey="timeDiv" clickEvent={(k, v) => setDropdownStates(p => ({...p, [k]: {...p[k], selectedValue: v, isOpen: false}}))} />
                 </DropdownContainer>
                 <DropdownContainer>
                     <DropdownText>
                         {dropdownStates.timeFilter.selectedValue}
                         <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeFilter.isOpen} onClick={() => toggleDropdown('timeFilter')} />
                     </DropdownText>
-                    <SmallDropdown arr={dropdownStates.timeFilter.options} isOpen={dropdownStates.timeFilter.isOpen} dropdownKey="timeFilter" clickEvent={selectOption} />
+                    <SmallDropdown arr={dropdownStates.timeFilter.options} isOpen={dropdownStates.timeFilter.isOpen} dropdownKey="timeFilter" clickEvent={(k, v) => setDropdownStates(p => ({...p, [k]: {...p[k], selectedValue: v, isOpen: false}}))} />
                 </DropdownContainer>
             </TimeDivContainer>
 
             <GrayLineDiv/>
             
-            <TimeSelectionTable selectedGap={30}>
+            <TimeSelectionTable>
                 {displayTimes.map(time => {
-                    if ((dropdownStates.timeFilter.selectedValue === "30분마다" && time % 30 !== 0) ||
-                        (dropdownStates.timeFilter.selectedValue === "1시간마다" && time % 60 !== 0)) {
+                    if ((dropdownStates.timeFilter.selectedValue === "30분마다" && time % 30 !== 0) || (dropdownStates.timeFilter.selectedValue === "1시간마다" && time % 60 !== 0)) {
                         return null;
                     }
-                    const formattedTime = formatTime(time);
                     return (
                         <TimeSelectionButton
-                            key={formattedTime}
-                            time={formattedTime}
+                            key={time}
+                            time={formatTime(time)}
                             rawTime={time}
-                            isSelection={selectedTimes.includes(time)}
-                            setIsSelection={() => {
-                                if (selectedDates) {
-                                    setSelectedTimes(prev => 
-                                        prev.includes(time) ? prev.filter(t => t !== time) : [...prev, time]
-                                    );
-                                } else {
-                                    alert("[경고] 날짜를 먼저 선택해주세요!");
-                                }
-                            }}
+                            isSelection={selectedTimes.has(time)}
+                            setIsSelection={() => handleTimeChange(time)}
                         />
                     );
                 })}
@@ -216,54 +202,38 @@ const RegisterPlan: React.FC = () => {
             <GrayLineDiv/>
 
             <OptionContainer>
-                {Object.entries({
+                 {Object.entries({
                     selectedTime: { icon: images.clock, text: "선택시간대" },
-                    priority: { icon: images.thumbsup, text: "우선 순위" },
+                    priority: { icon: images.thumbsup, text: "선호도" },
                     disclosureRange: { icon: images.lock, text: "공개 범위" },
                     availableChannel: { icon: images.arrowdown, text: "참여가능 채널" },
-                }).map(([key, value]) => (
-                    <OptionDivider key={key}>
-                        <OptionText>
-                            <OptionIconImage src={value.icon} />
-                            {value.text}
-                        </OptionText>
-                        <DropdownContainer>
-                            <DropdownText onClick={() => toggleDropdown(key as dropdownOptions)}>
-                                {dropdownStates[key as dropdownOptions].selectedValue}
-                                <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates[key as dropdownOptions].isOpen} />
-                            </DropdownText>
-                            <SmallDropdown
-                                arr={dropdownStates[key as dropdownOptions].options}
-                                isOpen={dropdownStates[key as dropdownOptions].isOpen}
-                                dropdownKey={key as dropdownOptions}
-                                clickEvent={selectOption}
-                            />
-                        </DropdownContainer>
-                    </OptionDivider>
-                ))}
+                }).map(([key, value]) => {
+                    const typedKey = key as DropdownOptionsType;
+                    return (
+                        <OptionDivider key={key}>
+                            <OptionText>
+                                <OptionIconImage src={value.icon} />
+                                {value.text}
+                            </OptionText>
+                            <DropdownContainer>
+                                <DropdownText onClick={() => toggleDropdown(typedKey)}>
+                                    {dropdownStates[typedKey].selectedValue}
+                                    <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates[typedKey].isOpen} />
+                                </DropdownText>
+                                <SmallDropdown
+                                    arr={dropdownStates[typedKey].options}
+                                    isOpen={dropdownStates[typedKey].isOpen}
+                                    dropdownKey={typedKey}
+                                    clickEvent={handleDetailChange}
+                                />
+                            </DropdownContainer>
+                        </OptionDivider>
+                    )
+                })}
 
-                <OptionDivider>
-                    <OptionText>
-                        <OptionIconImage src={images.info}/>
-                        추가 설명
-                    </OptionText>
-                </OptionDivider>
-                <DescriptionTextBox
-                    onChange={(e) => {
-                        const newTimeObject = [...TimeObject];
-                        const prevIndex = newTimeObject.findIndex(obj => 
-                            obj.date.day === selectedDates && obj.date.month === month && obj.date.year === currentDate.getFullYear()
-                        );
-                        if (prevIndex !== -1) {
-                            newTimeObject[prevIndex].details.description = e.target.value;
-                            setTimeObject(newTimeObject);
-                        }
-                    }}
-                    placeholder="가능한 일정에 대한 부연설명을 써보세요."
-                />
                 <ButtonContainer>
-                    <ResetButton>초기화</ResetButton>
-                    <SaveButton onClick={submitPlan}>저장</SaveButton>
+                    <ResetButton onClick={() => { setAvailability({}); setSelectedDate(null); setSelectedTimes(new Set()); }}>초기화</ResetButton>
+                    <SaveButton onClick={submitPlan}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
                 </ButtonContainer>
             </OptionContainer>
         </PageContainer>
@@ -285,14 +255,17 @@ const ClickableTimeTitle = styled.h3`
     font-weight: 400;
     cursor: pointer;
     transition: color 0.2s ease-in-out;
+    color: ${props => props.theme.text1};
+
     &:hover {
-        color: #2693FF;
+        color: ${props => props.theme.accent};
     }
 `;
 
 const Title = styled.h1`
     font-size: 18pt;
     font-weight: 700;
+    color: ${props => props.theme.text1};
 `;
 
 const WeekCalendarContainer = styled.div`
@@ -316,11 +289,12 @@ const TimeDivTitle = styled.p`
     font-size: 14pt;
     font-weight: 600;
     margin: 0;
+    color: ${props => props.theme.text1};
 `;
 
-const TimeSelectionTable = styled.div<{selectedGap: number}>`
+const TimeSelectionTable = styled.div`
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 0.5em;
     border-radius: 0.5em;
     justify-items: center;
@@ -330,7 +304,7 @@ const TimeSelectionTable = styled.div<{selectedGap: number}>`
 const OptionContainer = styled.section`
     display: grid;
     margin: 0.75em;
-    gap: 0.75em;
+    gap: 1em;
 `;
 
 const OptionDivider = styled.div`
@@ -343,6 +317,7 @@ const OptionIconImage = styled.img`
     width: 1em;
     height: 100%;
     margin: 0 0.5em 0 0;
+    filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
 
 const OptionText = styled.p`
@@ -350,22 +325,7 @@ const OptionText = styled.p`
     align-items: center;
     font-size: 13pt;
     font-weight: 400;
-`;
-
-const DescriptionTextBox = styled.textarea`
-    border: none;
-    border-bottom: 1px solid #BCBCBC;
-    transition: border-bottom ease 0.5s;
-    padding: 0.5em 0;
-    font-family: inherit;
-    font-size: 11pt;
-    resize: vertical;
-    min-height: 3em;
-
-    &:focus {
-        border-bottom: 1px solid #2693FF;
-        outline: none;
-    }
+    color: ${props => props.theme.text1};
 `;
 
 const ButtonContainer = styled.div`
@@ -378,26 +338,29 @@ const baseButton = styled.button`
     font-size: 12pt;
     width: 100%;
     border-radius: 0.5em;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 2px ${props => props.theme.shadow1};
     padding: 0.5em 1em;
     cursor: pointer;
     transition: all 0.2s ease;
 `;
 
 const ResetButton = styled(baseButton)`
-    border: 1px solid #C2C2C2;
-    background-color: #FFFFFF;
+    border: 1px solid ${props => props.theme.border1};
+    background-color: ${props => props.theme.bg_element1};
+    color: ${props => props.theme.text1};
+
     &:hover {
-        background-color: #f5f5f5;
+        background-color: ${props => props.theme.bg_element2};
     }
 `;
 
 const SaveButton = styled(baseButton)`
     color: white;
-    background-color: #2693FF; 
-    border: 1px solid #2693FF;
+    background-color: ${props => props.theme.accent}; 
+    border: 1px solid ${props => props.theme.accent};
+    
     &:hover {
-        background-color: #1a83e6;
+        filter: brightness(0.9);
     }
 `;
 

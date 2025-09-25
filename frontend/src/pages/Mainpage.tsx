@@ -48,7 +48,6 @@ const Mainpage = () => {
 
     return (
         <PageFrame>
-            {/* 상단 컨텐츠 영역 (달력까지) */}
             <div>
                 <Title>안녕하세요, 미모님!</Title>
                 <Description>{futurePlans.length}개의 일정이 매치되었습니다!</Description>
@@ -56,7 +55,6 @@ const Mainpage = () => {
                 <GrayLineDiv/>
             </div>
 
-            {/* 하단 컨텐츠 영역 (다가오는 일정) */}
             <PlanContainer>
                 <PlanTitleContainer>
                     <PlanText>다가오는 일정</PlanText>
@@ -104,29 +102,33 @@ const Mainpage = () => {
 export const PageFrame = styled.div`
     display: flex;
     flex-direction: column;
-    height: calc(100% - 3.5em);
+    height: 100%;
 `;
 
 const Title = styled.p`
     font-size: 22pt;
     font-weight: 900;
+    color: ${props => props.theme.text1};
 `;
 
 const Description = styled.p`
     font-size: 14pt;
     font-weight: 400;
+    color: ${props => props.theme.text2};
 `;
 
 export const GrayLineDiv = styled.div`
     width: 100%; 
     height: 1px;
-    background-color: #DCDCDC;
+    background-color: ${props => props.theme.border1};
     border-radius: 1px;
 `;
 
 const PlanContainer = styled.div`
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 `;
 
 const PlanTitleContainer = styled.div`
@@ -139,6 +141,7 @@ const PlanTitleContainer = styled.div`
 const PlanText = styled.p`
     font-size: 12pt;
     font-weight: 500;
+    color: ${props => props.theme.text1};
 `;
 
 const UpcomingPlanContainer = styled.div`
@@ -147,9 +150,9 @@ const UpcomingPlanContainer = styled.div`
     width: 100%;
     padding: 0 0.75em 0.75em 0.75em;
     overflow-y: auto;
-    margin: 0 0 1em 0;
     gap: 0.5em;
     border-radius: 0.25em;
+    flex: 1;
 `;
 
 export const DropdownContainer = styled.div`
@@ -161,7 +164,7 @@ export const DropdownText = styled.span`
     align-items: center;
     font-size: 10pt;
     font-weight: 400;
-    color: #595959;
+    color: ${props => props.theme.text2};
     cursor: pointer;
 `;
 
@@ -177,11 +180,11 @@ const Dropdown = styled.div`
     position: absolute;
     width: 6em;
     padding: 0.5em 0 0.5em 0;
-    z-index: 1;
+    z-index: 10;
     right: 0;
-    background-color: #FAFAFA;
+    background-color: ${props => props.theme.bg_element2};
     border-radius: 0.25em;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px ${props => props.theme.shadow1};
 `;
 
 const NoPlanText = styled.p`
@@ -190,7 +193,7 @@ const NoPlanText = styled.p`
     text-align: center;
     font-size: 16pt;
     font-weight: 700;
-    color: #888;
+    color: ${props => props.theme.text4};
 `;
 
 export default Mainpage;

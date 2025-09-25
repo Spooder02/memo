@@ -5,12 +5,13 @@ const DateBlock: React.FC<{index: number}> = ({ index }) => {
 
     return (
         <Frame>
-            <Date i={index}>
+            <DateText i={index}>
                 {Days[index]}
-            </Date>
+            </DateText>
         </Frame>
     )
 }
+
 
 const Frame = styled.div`
     display: flex;
@@ -20,9 +21,13 @@ const Frame = styled.div`
     height: 3em;
 `;
 
-const Date = styled.p<{i: number}>`
+const DateText = styled.p<{i: number}>`
     font-weight: 600;
-    color: ${(props) => (props.i == 0)? '#FF3434': (props.i == 6)? '#3287FF': '#292929'};
+    color: ${(props) => {
+        if (props.i === 0) return props.theme.red;
+        if (props.i === 6) return props.theme.accent;
+        return props.theme.text1;
+    }};
 `;
 
 export default DateBlock;

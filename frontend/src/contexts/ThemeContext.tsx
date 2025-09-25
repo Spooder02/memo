@@ -33,11 +33,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('theme', newTheme);
     }, [theme]);
 
-    const currentTheme = theme === 'light' ? lightTheme : darkTheme;
+    const currentThemeObject = theme === 'light' ? lightTheme : darkTheme;
+    
+    // 테마 객체에 현재 테마의 이름을 추가하여 전달
+    const themeForProvider = { ...currentThemeObject, name: theme };
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            <StyledThemeProvider theme={currentTheme}>
+            <StyledThemeProvider theme={themeForProvider}>
                 {children}
             </StyledThemeProvider>
         </ThemeContext.Provider>

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "team-likelion",
+    "teamImage": "/src/assets/images/likelionsch_logo.png",
+    "teamName": "멋쟁이사자처럼 13기",
+    "teamDesc": "순천향대학교 중앙 IT 창업동아리",
+    "teamScale": 36,
+    "teammates": ["mimo", "user2"]
+  },
+  {
+    "id": "team-sideproject",
+    "teamImage": "/src/assets/images/testProfile.png",
+    "teamName": "사이드 프로젝트 팀",
+    "teamDesc": "React 기반 신규 서비스 개발",
+    "teamScale": 5,
+    "teammates": ["mimo", "user3"]
+  }
+]
