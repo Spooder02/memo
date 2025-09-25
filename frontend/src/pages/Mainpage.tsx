@@ -1,16 +1,17 @@
 import styled from "styled-components";
 import Calendar from "../components/Calendar";
 import { useEffect, useState } from "react";
-import { CurrentDate } from "../types/DateFormat";
+import { CurrentDate, UserProfileInfo } from "../types/DateFormat";
 import UpcomingPlanCard from "../components/UpcomingPlanCard";
-import simplePlansData from "../assets/SimplePlans.json";
 import { SimplePlan } from "../types/PlanFormat";
 import images from "../utils/ImportImages";
 import { DropdownItem } from "../components/SmallDropdown";
+import apiClient from "../api/client"; // API 클라이언트 import
 
 const Mainpage = () => {
     // --- 상태 관리 ---
-    const [plans, setPlans] = useState<SimplePlan[]>(simplePlansData);
+    const [userProfile, setUserProfile] = useState<UserProfileInfo | null>(null);
+    const [confirmedMeetings, setConfirmedMeetings] = useState<SimplePlan[]>([]);
     const [sortedPlans, setSortedPlans] = useState<SimplePlan[]>([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<string>("임박순");
@@ -19,8 +20,24 @@ const Mainpage = () => {
         month: new Date().getMonth(),
     });
 
-    // --- 남은 일정 개수 계산 ---
-    const futurePlans = plans.filter(p => new Date(p.dayLeft) >= new Date());
+    // --- 데이터 로딩: 서버로부터 사용자 정보와 미팅 목록을 가져옴 ---
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // 동시에 여러 API를 요청하여 성능 최적화
+                const [profileRes, meetingsRes] = await Promise.all([
+                    apiClient.get('/profile'),
+                    apiClient.get('/meetings/confirmed') // 확정된 미팅 목록 API
+                ]);
+                setUserProfile(profileRes.data);
+                setConfirmedMeetings(meetingsRes.data);
+            } catch (error) {
+                console.error("Failed to fetch main page data:", error);
+                // 에러 처리 (예: 로그인 페이지로 리디렉션)
+            }
+        };
+        fetchData();
+    }, []);
 
     // --- D-day 계산 함수 ---
     const getDday = (timeLeft: string) => {
@@ -33,7 +50,7 @@ const Mainpage = () => {
 
     // --- 정렬 로직 ---
     useEffect(() => {
-        let newSortedData = [...plans];
+        let newSortedData = [...confirmedMeetings]; // API로 받아온 데이터를 정렬
         if (selectedFilter === "임박순") {
             newSortedData.sort((a, b) => new Date(a.dayLeft).getTime() - new Date(b.dayLeft).getTime());
         } else if (selectedFilter === "먼 날짜순") {
@@ -42,15 +59,20 @@ const Mainpage = () => {
             newSortedData.sort((a, b) => b.teamScale - a.teamScale);
         }
         setSortedPlans(newSortedData);
-    }, [selectedFilter, plans]);
+    }, [selectedFilter, confirmedMeetings]);
 
     const filteredPlans = sortedPlans.filter(data => getDday(data.dayLeft) >= 0);
+
+    // 데이터 로딩 중 표시
+    if (!userProfile) {
+        return <PageFrame><div>로딩 중...</div></PageFrame>;
+    }
 
     return (
         <PageFrame>
             <div>
-                <Title>안녕하세요, 미모님!</Title>
-                <Description>{futurePlans.length}개의 일정이 매치되었습니다!</Description>
+                <Title>안녕하세요, {userProfile.nickname}님!</Title>
+                <Description>{confirmedMeetings.length}개의 일정이 매치되었습니다!</Description>
                 <Calendar currentDate={currentDate} setCurrentDate={setCurrentDate} />
                 <GrayLineDiv/>
             </div>
@@ -66,13 +88,7 @@ const Mainpage = () => {
                         {dropdownOpen && (
                             <Dropdown>
                                 {["임박순", "먼 날짜순", "팀 규모순"].map((name) => (
-                                    <DropdownItem
-                                        key={name}
-                                        onClick={() => {
-                                            setSelectedFilter(name);
-                                            setDropdownOpen(false);
-                                        }}
-                                    >
+                                    <DropdownItem key={name} onClick={() => { setSelectedFilter(name); setDropdownOpen(false); }}>
                                         {name}
                                     </DropdownItem>
                                 ))}
@@ -82,12 +98,10 @@ const Mainpage = () => {
                 </PlanTitleContainer>
 
                 <UpcomingPlanContainer>
-                    {filteredPlans.filter(data => getDday(data.dayLeft) > 0).length > 0 ? (
-                        filteredPlans
-                            .filter(data => getDday(data.dayLeft) > 0) 
-                            .map((data) => (
-                                <UpcomingPlanCard key={data.id} plan={data} dday={getDday(data.dayLeft)} />
-                            ))
+                    {filteredPlans.length > 0 ? (
+                        filteredPlans.map((data) => (
+                            <UpcomingPlanCard key={data.id} plan={data} dday={getDday(data.dayLeft)} />
+                        ))
                     ) : (
                         <NoPlanText>예정된 계획이 없습니다.</NoPlanText>
                     )}
@@ -97,7 +111,7 @@ const Mainpage = () => {
     );
 }
 
-// --- Styled Components ---
+// --- Styled Components (이전 답변의 전체 코드와 동일) ---
 
 export const PageFrame = styled.div`
     display: flex;

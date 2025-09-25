@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import Layout from "./Layout";
 import Mainpage from "./pages/Mainpage";
 import RegisterPlan from "./pages/RegisterPlan";
@@ -8,30 +9,48 @@ import MyProfilePage from "./pages/MyProfile";
 import SetProfile from "./pages/SetProfile";
 import NotFound from "./pages/NotFound";
 import ConfirmMeetingPage from "./pages/ConfirmMeetingPage";
-import ProposalStatusPage from "./pages/ProposalStatusPage";
 import CreateMeetingPage from './pages/CreateMeetingPage';
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 
 interface RouteElement {
-    path: string;
+    path?: string;
     element: ReactNode;
     errorElement?: ReactNode;
     children?: RouteElement[];
 }
 
+// --- 보호된 경로(로그인 필수)를 위한 컴포넌트 ---
+const ProtectedRoute = () => {
+    const { token } = useAuth();
+    return token ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+// --- 라우트 설정 ---
 const routes: RouteElement[] = [
+    // --- 공개 경로 ---
+    { path: "/login", element: <LoginPage /> },
+    { path: "/signup", element: <SignUpPage /> },
+
+    // --- 보호된 경로 / 회원 전용 페이지 ---
     {
-        path: '/',
-        element: <Layout/>,
-        errorElement: <NotFound/>,
+        element: <ProtectedRoute />,
         children: [
-            { path: '', element: <Mainpage/> },
-            { path: 'registerplan', element: <RegisterPlan/> }, // 개인 가능 시간 등록
-            { path: 'create-meeting', element: <CreateMeetingPage/> }, // 새 미팅 만들기
-            { path: 'confirm-meeting', element: <ConfirmMeetingPage/> }, // 공통 시간 확인 및 확정
-            { path: 'myteam', element: <TeamPage/> },
-            { path: 'profile', element: <MyProfilePage/> },
-            { path: 'setProfile', element: <SetProfile/> },
-        ],
+            {
+                path: '/',
+                element: <Layout/>,
+                errorElement: <NotFound/>,
+                children: [
+                    { path: '', element: <Mainpage/> },
+                    { path: 'registerplan', element: <RegisterPlan/> },
+                    { path: 'create-meeting', element: <CreateMeetingPage/> },
+                    { path: 'confirm-meeting', element: <ConfirmMeetingPage/> },
+                    { path: 'myteam', element: <TeamPage/> },
+                    { path: 'profile', element: <MyProfilePage/> },
+                    { path: 'setProfile', element: <SetProfile/> },
+                ],
+            }
+        ]
     }
 ]
 

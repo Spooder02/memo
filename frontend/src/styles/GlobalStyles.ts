@@ -1,8 +1,7 @@
 // src/styles/GlobalStyle.ts
 import { createGlobalStyle } from "styled-components";
-import { Theme } from "./theme";
 
-const GlobalStyle = createGlobalStyle<{theme: Theme}>`
+const GlobalStyle = createGlobalStyle`
   * {
     box-sizing: border-box;
     transition: background-color 0.2s, color 0.2s;
