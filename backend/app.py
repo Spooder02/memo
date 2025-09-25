@@ -22,8 +22,16 @@ TEAMS = {
 }
 
 USER_AVAILABILITY = {
-    "mimo": [{"date": {"year": 2025, "month": 9, "day": 26}, "times": [{"time": 540, "priority": "보통"}, {"time": 780, "priority": "선호"}]}],
-    "user2": [{"date": {"year": 2025, "month": 9, "day": 26}, "times": [{"time": 540, "priority": "선호"}, {"time": 780, "priority": "보통"}]}],
+    "mimo": {
+        "2025-09-25": {
+            "times": [540, 555, 570],
+            "details": {"priority": "선호", "availableChannel": "온라인"}
+        },
+        "2025-10-25": {
+            "times": [1080, 1095, 1110],
+            "details": {"priority": "보통", "availableChannel": "오프라인"}
+        }
+    }
 }
 
 MEETINGS = {
@@ -168,6 +176,20 @@ def get_confirmed_meetings(current_user):
     ]
     return jsonify(confirmed_meetings)
 
+@app.route("/availability", methods=["GET", "POST"])
+@token_required
+def handle_availability(current_user):
+    user_id = current_user["id"]
+
+    if request.method == "POST":
+        # 클라이언트가 보낸 전체 availability 객체로 데이터를 덮어씀
+        new_availability = request.get_json()
+        USER_AVAILABILITY[user_id] = new_availability
+        print(f"Updated availability for {user_id}: {USER_AVAILABILITY[user_id]}")
+        return jsonify({"message": "Availability updated successfully"})
+    
+    # GET 요청: 저장된 사용자의 availability 객체를 반환 (없으면 빈 객체)
+    return jsonify(USER_AVAILABILITY.get(user_id, {}))
 
 # ... (다른 엔드포인트: 확정, 목록 조회 등)
 

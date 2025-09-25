@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import apiClient from '../api/client';
 import DateBlocks from '../components/DateBlocks';
 import DayBlock from '../components/DayBlock';
 import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
 import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
-import { TimeSelectionObject, RegisterPlanDetails } from '../types/TimeSelectionObject';
+import { RegisterPlanDetails } from '../types/TimeSelectionObject';
 import { formatTime, getWeekDates, groupAndFormatTimes, getWeekInfo } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
 import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
@@ -15,25 +16,24 @@ import WeekSelectorModal from '../components/WeekSelectorModal';
 import teamsData from '../assets/teams.json';
 
 type Availability = {
-    [day: number]: {
-        times: Set<number>;
+    [dateKey: string]: {
+        times: number[];
         details: Partial<RegisterPlanDetails>;
     }
 }
 
 type DropdownOptionsType = "timeDiv" | "timeFilter" | "selectedTime" | "priority" | "disclosureRange" | "availableChannel";
 
-
 const RegisterPlan: React.FC = () => {
     const { meetingId } = useParams<{ meetingId: string }>();
+    const navigate = useNavigate();
     const isProposalMode = !!meetingId;
 
     // --- 상태 관리 ---
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<number | null>(null);
-    const [selectedTimes, setSelectedTimes] = useState<Set<number>>(new Set());
     const [availability, setAvailability] = useState<Availability>({});
-    
+    const [isLoading, setIsLoading] = useState(true);
     const [isWeekModalOpen, setIsWeekModalOpen] = useState(false);
     const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
     
@@ -51,32 +51,50 @@ const RegisterPlan: React.FC = () => {
 
     // --- 데이터 로딩 및 동적 옵션 생성 ---
     useEffect(() => {
-        const currentUserId = "mimo";
-        const myTeams = teamsData.filter(team => team.teammates.includes(currentUserId));
-        const myTeamNames = myTeams.map(team => team.teamName);
-        setDropdownStates(prev => ({
-            ...prev,
-            disclosureRange: { ...prev.disclosureRange, options: ["전체 공개", ...myTeamNames] }
-        }));
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                const [availRes, teamsRes] = await Promise.all([
+                    apiClient.get('/availability'),
+                    apiClient.get('/teams')
+                ]);
+                
+                setAvailability(availRes.data);
+
+                const myTeamNames = teamsRes.data.map((team: any) => team.teamName);
+                setDropdownStates(prev => ({
+                    ...prev,
+                    disclosureRange: { ...prev.disclosureRange, options: ["전체 공개", ...myTeamNames] }
+                }));
+
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
     useEffect(() => {
         if (!selectedDate) return;
-        const sortedTimes = Array.from(selectedTimes).sort((a, b) => a - b);
+        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+        const currentTimes = availability[dateKey]?.times || [];
+        const sortedTimes = [...currentTimes].sort((a, b) => a - b);
         const timeGap = dropdownStates.timeFilter.selectedValue === '1시간마다' ? 60 : (dropdownStates.timeFilter.selectedValue === '30분마다' ? 30 : 15);
         const formattedSelectedTimes = groupAndFormatTimes(sortedTimes, timeGap);
         setDropdownStates(prev => ({
             ...prev,
             selectedTime: { ...prev.selectedTime, options: ["선택된 시간 전체", ...formattedSelectedTimes], selectedValue: "선택된 시간 전체" }
         }));
-    }, [selectedTimes, dropdownStates.timeFilter.selectedValue, selectedDate]);
+    }, [availability, selectedDate, currentDate, month, dropdownStates.timeFilter.selectedValue]);
 
 
     // --- 핸들러 함수 ---
     const handleDateSelect = (date: number) => {
         setSelectedDate(date);
-        const existingData = availability[date];
-        setSelectedTimes(existingData ? existingData.times : new Set());
+        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        const existingData = availability[dateKey];
         if (existingData?.details) {
             setDropdownStates(prev => ({
                 ...prev,
@@ -90,52 +108,63 @@ const RegisterPlan: React.FC = () => {
     
     const handleTimeChange = (time: number) => {
         if (!selectedDate) { alert("[경고] 날짜를 먼저 선택해주세요!"); return; }
-        const newTimes = new Set(selectedTimes);
-        newTimes.has(time) ? newTimes.delete(time) : newTimes.add(time);
-        setSelectedTimes(newTimes);
+        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+        
+        const currentTimes = new Set(availability[dateKey]?.times || []);
+        currentTimes.has(time) ? currentTimes.delete(time) : currentTimes.add(time);
+        const newTimesArray = Array.from(currentTimes).sort((a,b) => a-b);
+        
         setAvailability(prev => ({
             ...prev,
-            [selectedDate]: {
-                times: newTimes,
-                details: prev[selectedDate]?.details || {}
-            }
+            [dateKey]: { ...prev[dateKey], times: newTimesArray, details: prev[dateKey]?.details || {} }
         }));
     };
 
     const handleDetailChange = (key: keyof RegisterPlanDetails, value: string) => {
         if (!selectedDate) return;
+        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
         setDropdownStates(prev => ({ ...prev, [key as DropdownOptionsType]: { ...prev[key as DropdownOptionsType], selectedValue: value, isOpen: false } }));
         setAvailability(prev => ({
             ...prev,
-            [selectedDate]: {
-                times: prev[selectedDate]?.times || new Set(),
-                details: { ...prev[selectedDate]?.details, [key]: value }
-            }
+            [dateKey]: { times: prev[dateKey]?.times || [], details: { ...prev[dateKey]?.details, [key]: value } }
         }));
     };
 
     const toggleDropdown = (dropdownKey: DropdownOptionsType) => {
         setDropdownStates(prev => {
             const isOpening = !prev[dropdownKey].isOpen;
-            const closedState = Object.fromEntries(
-                Object.keys(prev).map(key => [ key, { ...prev[key as DropdownOptionsType], isOpen: false }])
-            ) as {[key in DropdownOptionsType]: DropdownItemState};
+            const closedState = Object.fromEntries(Object.keys(prev).map(key => [ key, { ...prev[key as DropdownOptionsType], isOpen: false }])) as {[key in DropdownOptionsType]: DropdownItemState};
             return { ...closedState, [dropdownKey]: { ...prev[dropdownKey], isOpen: isOpening } };
         });
     };
 
-    const submitPlan = () => {
-        console.log("SUBMITTING DATA:", availability);
+    const submitPlan = async () => {
         if (Object.keys(availability).length === 0) {
             alert("[오류] 등록할 일정을 선택하세요!");
             return;
         }
-        setIsCheckModalOpen(true);
-        setTimeout(() => setIsCheckModalOpen(false), 3000);
+        try {
+            if (isProposalMode) {
+                await apiClient.post(`/meetings/${meetingId}/proposals`, { availability });
+                alert("미팅 가능 시간이 제출되었습니다.");
+                navigate(`/myteam`);
+            } else {
+                await apiClient.post('/availability', availability);
+                setIsCheckModalOpen(true);
+                setTimeout(() => setIsCheckModalOpen(false), 3000);
+            }
+        } catch (error) {
+            console.error("Failed to save data:", error);
+            alert("저장에 실패했습니다. 다시 시도해주세요.");
+        }
     };
     
     const baseTimes = Array.from({ length: 48 }, (_, index) => index * 15);
     const displayTimes = dropdownStates.timeDiv.selectedValue === '오후' ? baseTimes.map(t => t + 720) : baseTimes;
+
+    if (isLoading) {
+        return <PageContainer>로딩 중...</PageContainer>;
+    }
 
     return (
         <PageContainer>
@@ -148,33 +177,36 @@ const RegisterPlan: React.FC = () => {
                 </ClickableTimeTitle>
             )}
 
-            <Title>{isProposalMode ? '미팅 가능 시간 등록' : '미팅 가능 시간을 선택해주세요!'}</Title>
+            <Title>{isProposalMode ? '미팅 가능 시간 등록' : '내 시간 등록하기'}</Title>
 
             <WeekCalendarContainer>
                 <DateBlocks/>
-                {weekDates.map((date) => (
-                    <DayBlock
-                        key={`${month}-${date}`}
-                        date={date}
-                        today={(date === selectedDate)}
-                        color={availability[date]?.times.size > 0 ? '#B5DBFF' : undefined}
-                        onClick={() => handleDateSelect(date)}
-                    />
-                ))}
+                {weekDates.map((date) => {
+                    const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                    return (
+                        <DayBlock
+                            key={dateKey}
+                            date={date}
+                            today={(date === selectedDate)}
+                            color={availability[dateKey]?.times.length > 0 ? '#B5DBFF' : undefined}
+                            onClick={() => handleDateSelect(date)}
+                        />
+                    )
+                })}
             </WeekCalendarContainer>
 
             <TimeDivContainer>
                  <DropdownContainer>
-                    <TimeDivTitle>
+                    <TimeDivTitle onClick={() => toggleDropdown('timeDiv')}>
                         {dropdownStates.timeDiv.selectedValue}
-                        <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeDiv.isOpen} onClick={() => toggleDropdown('timeDiv')} />
+                        <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeDiv.isOpen} />
                     </TimeDivTitle>
                     <SmallDropdown arr={dropdownStates.timeDiv.options} isOpen={dropdownStates.timeDiv.isOpen} dropdownKey="timeDiv" clickEvent={(k, v) => setDropdownStates(p => ({...p, [k]: {...p[k], selectedValue: v, isOpen: false}}))} />
                 </DropdownContainer>
                 <DropdownContainer>
-                    <DropdownText>
+                    <DropdownText onClick={() => toggleDropdown('timeFilter')}>
                         {dropdownStates.timeFilter.selectedValue}
-                        <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeFilter.isOpen} onClick={() => toggleDropdown('timeFilter')} />
+                        <DropdownButtonImage src={images.dropdownArrow} isOpen={dropdownStates.timeFilter.isOpen} />
                     </DropdownText>
                     <SmallDropdown arr={dropdownStates.timeFilter.options} isOpen={dropdownStates.timeFilter.isOpen} dropdownKey="timeFilter" clickEvent={(k, v) => setDropdownStates(p => ({...p, [k]: {...p[k], selectedValue: v, isOpen: false}}))} />
                 </DropdownContainer>
@@ -183,20 +215,25 @@ const RegisterPlan: React.FC = () => {
             <GrayLineDiv/>
             
             <TimeSelectionTable>
-                {displayTimes.map(time => {
-                    if ((dropdownStates.timeFilter.selectedValue === "30분마다" && time % 30 !== 0) || (dropdownStates.timeFilter.selectedValue === "1시간마다" && time % 60 !== 0)) {
-                        return null;
-                    }
-                    return (
-                        <TimeSelectionButton
-                            key={time}
-                            time={formatTime(time)}
-                            rawTime={time}
-                            isSelection={selectedTimes.has(time)}
-                            setIsSelection={() => handleTimeChange(time)}
-                        />
-                    );
-                })}
+                {displayTimes
+                    .filter(time => {
+                        if (dropdownStates.timeFilter.selectedValue === "30분마다") return time % 30 === 0;
+                        if (dropdownStates.timeFilter.selectedValue === "1시간마다") return time % 60 === 0;
+                        return true;
+                    })
+                    .map(time => {
+                        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+                        const isSelected = selectedDate ? availability[dateKey]?.times.includes(time) : false;
+                        return (
+                            <TimeSelectionButton
+                                key={time}
+                                time={formatTime(time)}
+                                rawTime={time}
+                                isSelection={isSelected || false}
+                                setIsSelection={() => handleTimeChange(time)}
+                            />
+                        );
+                    })}
             </TimeSelectionTable>
 
             <GrayLineDiv/>
@@ -232,7 +269,7 @@ const RegisterPlan: React.FC = () => {
                 })}
 
                 <ButtonContainer>
-                    <ResetButton onClick={() => { setAvailability({}); setSelectedDate(null); setSelectedTimes(new Set()); }}>초기화</ResetButton>
+                    <ResetButton onClick={() => setAvailability({})}>전체 초기화</ResetButton>
                     <SaveButton onClick={submitPlan}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
                 </ButtonContainer>
             </OptionContainer>
@@ -249,25 +286,21 @@ const PageContainer = styled.section`
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
 `;
-
 const ClickableTimeTitle = styled.h3`
     font-size: 15pt;
     font-weight: 400;
     cursor: pointer;
     transition: color 0.2s ease-in-out;
     color: ${props => props.theme.text1};
-
     &:hover {
         color: ${props => props.theme.accent};
     }
 `;
-
 const Title = styled.h1`
     font-size: 18pt;
     font-weight: 700;
     color: ${props => props.theme.text1};
 `;
-
 const WeekCalendarContainer = styled.div`
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -275,14 +308,12 @@ const WeekCalendarContainer = styled.div`
     gap: 0.25em;
     margin-bottom: 1em;
 `;
-
 const TimeDivContainer = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 0 0.5em 0.5em 0.5em;
 `;
-
 const TimeDivTitle = styled.p`
     display: flex;
     align-items: center;
@@ -290,8 +321,8 @@ const TimeDivTitle = styled.p`
     font-weight: 600;
     margin: 0;
     color: ${props => props.theme.text1};
+    cursor: pointer;
 `;
-
 const TimeSelectionTable = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -300,26 +331,22 @@ const TimeSelectionTable = styled.div`
     justify-items: center;
     margin: 1em 0.5em 1em 0.5em;
 `;
-
 const OptionContainer = styled.section`
     display: grid;
     margin: 0.75em;
     gap: 1em;
 `;
-
 const OptionDivider = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
 `;
-
 const OptionIconImage = styled.img`
     width: 1em;
     height: 100%;
     margin: 0 0.5em 0 0;
     filter: ${props => props.theme.name === 'dark' ? 'invert(1)' : 'none'};
 `;
-
 const OptionText = styled.p`
     display: flex;
     align-items: center;
@@ -327,13 +354,11 @@ const OptionText = styled.p`
     font-weight: 400;
     color: ${props => props.theme.text1};
 `;
-
 const ButtonContainer = styled.div`
     display: flex;
     gap: 0.5em;
     margin-top: 1em;
 `;
-
 const baseButton = styled.button`
     font-size: 12pt;
     width: 100%;
@@ -343,22 +368,18 @@ const baseButton = styled.button`
     cursor: pointer;
     transition: all 0.2s ease;
 `;
-
 const ResetButton = styled(baseButton)`
     border: 1px solid ${props => props.theme.border1};
     background-color: ${props => props.theme.bg_element1};
     color: ${props => props.theme.text1};
-
     &:hover {
         background-color: ${props => props.theme.bg_element2};
     }
 `;
-
 const SaveButton = styled(baseButton)`
     color: white;
     background-color: ${props => props.theme.accent}; 
     border: 1px solid ${props => props.theme.accent};
-    
     &:hover {
         filter: brightness(0.9);
     }

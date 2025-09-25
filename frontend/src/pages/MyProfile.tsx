@@ -5,61 +5,83 @@ import MembershipCircle from "../components/MembershipCircle";
 import { Membership } from "../types/Membership";
 import { useState } from "react";
 import MenuWithIcon from "../components/MenuWithIcon";
+import { useAuth } from "../contexts/AuthContext"; // useAuth 훅 import
 
 const MyProfilePage = () => {
+    const { user, logout } = useAuth(); // AuthContext에서 user 정보와 logout 함수 가져오기
     const [membershipType, setMembershipType] = useState<Membership>("Pro");
+
+    if (!user) {
+        return <PageWrapper>로딩 중...</PageWrapper>; // 유저 정보가 로드되기 전
+    }
+
     return (
         <PageWrapper>
-            <ProfileHeaderContainer>
-                <CircledImage
-                    src={images.testProfile}
-                    width="5em"
-                    margin="0 1em 0 0"
-                />
-                <ProfileDetailContainer>
-                    <ProfileTitle>
-                        미모 님
-                    </ProfileTitle>
-                    <ProfileMembership>
-                        <MembershipCircle membershipType={membershipType}/>
-                        {membershipType} 요금제 이용 중
-                    </ProfileMembership>
-                </ProfileDetailContainer>
-            </ProfileHeaderContainer>
+            <div>
+                <ProfileHeaderContainer>
+                    {user.profileImg ? (
+                        <CircledImage
+                            src={user.profileImg} // API로 받은 프로필 이미지
+                            width="5em"
+                            margin="0 1em 0 0"
+                        />
+                    ) : (
+                        <CircledImage
+                            src={images.user} // 기본 프로필 이미지
+                            width="5em"
+                            margin="0 1em 0 0"
+                        />
+                    )}
+                    
+                    <ProfileDetailContainer>
+                        <ProfileTitle>{user.nickname} 님</ProfileTitle>
+                        {membershipType && ( // 멤버십 정보가 있을 때만 표시
+                            <ProfileMembership>
+                                <MembershipCircle membershipType={membershipType}/>
+                                {membershipType} 요금제 이용 중
+                            </ProfileMembership>
+                        )}
+                    </ProfileDetailContainer>
+                </ProfileHeaderContainer>
 
-            <MenuContainer>
-                <SettingTitle>설정 및 관리</SettingTitle>
-                <MenuWithIcon
-                    logoSrc={images.user}
-                    menuTitle="프로필 관리"
-                    menuDescription="프로필 사진 및 이름 변경"
-                    toLink="/setProfile"
-                />
-                <MenuWithIcon
-                    logoSrc={images.circledStar}
-                    menuTitle="멤버십 관리"
-                    menuDescription="멤버십 정보 및 혜택 확인"
-                    toLink="/membership"
-                />
-                <MenuWithIcon
-                    logoSrc={images.BlackLink}
-                    menuTitle="캘린더 연동"
-                    menuDescription="구글 캘린더 등 외부 캘린더 연동"
-                    toLink="/connectCalendar"
-                />
-                <MenuWithIcon
-                    logoSrc={images.clock}
-                    menuTitle="일정 설정"
-                    menuDescription="알림 및 반복 일정 관리"
-                    toLink="/setSchedule"
-                />
-                <MenuWithIcon
-                    logoSrc={images.info}
-                    menuTitle="서비스 정보"
-                    menuDescription="앱 버전 및 이용 약관"
-                    toLink="/infomation"
-                />
-            </MenuContainer>
+                <MenuContainer>
+                    <SettingTitle>설정 및 관리</SettingTitle>
+                    <MenuWithIcon
+                        logoSrc={images.user}
+                        menuTitle="프로필 관리"
+                        menuDescription="프로필 사진 및 이름 변경"
+                        toLink="/setProfile"
+                    />
+                    <MenuWithIcon
+                        logoSrc={images.circledStar}
+                        menuTitle="멤버십 관리"
+                        menuDescription="멤버십 정보 및 혜택 확인"
+                        toLink="/membership"
+                    />
+                    <MenuWithIcon
+                        logoSrc={images.BlackLink}
+                        menuTitle="캘린더 연동"
+                        menuDescription="구글 캘린더 등 외부 캘린더 연동"
+                        toLink="/connectCalendar"
+                    />
+                    <MenuWithIcon
+                        logoSrc={images.clock}
+                        menuTitle="일정 설정"
+                        menuDescription="알림 및 반복 일정 관리"
+                        toLink="/setSchedule"
+                    />
+                    <MenuWithIcon
+                        logoSrc={images.info}
+                        menuTitle="서비스 정보"
+                        menuDescription="앱 버전 및 이용 약관"
+                        toLink="/infomation"
+                    />
+                </MenuContainer>
+            </div>
+
+            <Spacer /> 
+
+            <LogoutButton onClick={logout}>로그아웃</LogoutButton>
         </PageWrapper>
     )
 }
@@ -71,14 +93,14 @@ const PageWrapper = styled.div`
     flex-direction: column;
     width: 100%;
     flex: 1;
-    padding: 1em; /* 페이지 전체에 여백 추가 */
+    padding: 1em;
 `;
 
 export const ProfileHeaderContainer = styled.header`
     display: flex;
     align-items: center;
     padding: 1.5em 1em;
-    background-color: ${props => props.theme.bg_element2}; /* 메뉴와 통일감을 주기 위해 bg_element2 사용 */
+    background-color: ${props => props.theme.bg_element2};
     border-radius: 0.75em;
 `;
 
@@ -106,8 +128,8 @@ const ProfileMembership = styled.span`
 const MenuContainer = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 0.5em; /* 메뉴 간 간격 조정 */
-    margin-top: 2em; /* 프로필 영역과의 간격 */
+    gap: 0.5em;
+    margin-top: 2em;
 `;
 
 const SettingTitle = styled.p`
@@ -116,6 +138,22 @@ const SettingTitle = styled.p`
     color: ${props => props.theme.text1};
     padding: 0 0.5em;
     margin-bottom: 0.5em;
+`;
+
+const Spacer = styled.div`
+  flex: 1;
+`;
+
+const LogoutButton = styled.button`
+    align-self: flex-end; /* 우측 정렬 */
+    margin-top: 1em;
+    font-size: 10pt;
+    color: ${props => props.theme.text4};
+    text-decoration: underline;
+
+    &:hover {
+        color: ${props => props.theme.red};
+    }
 `;
 
 export default MyProfilePage;
