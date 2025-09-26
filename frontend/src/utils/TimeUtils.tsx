@@ -55,39 +55,41 @@ export const getWeekInfo = (date: Date): { month: number, week: number } => {
  * @param gap - 그룹화를 위한 시간 간격 (분)
  * @returns 그룹화되고 포맷팅된 시간 문자열 배열 (예: ["00:00 ~ 00:30", "01:30"])
  */
-export const groupAndFormatTimes = (sortedTimes: number[], gap: number): string[] => {
+export const groupAndFormatTimes = (sortedTimes: number[]): string[] => {
     if (sortedTimes.length === 0) return [];
   
     const grouped: string[] = [];
     let currentGroup: number[] = [sortedTimes[0]];
   
     for (let i = 1; i < sortedTimes.length; i++) {
-      if (sortedTimes[i] - currentGroup[currentGroup.length - 1] === gap) {
+      // 시간 간격이 15분이면 같은 그룹으로 취급
+      if (sortedTimes[i] - currentGroup[currentGroup.length - 1] === 15) {
         currentGroup.push(sortedTimes[i]);
       } else {
+        // 그룹이 끝났을 때, 그룹의 길이에 따라 포맷팅
         if (currentGroup.length > 1) {
           const startTime = formatTime(currentGroup[0]);
-          const endTime = formatTime(currentGroup[currentGroup.length - 1] + gap - 15); // inclusive end time
+          const endTime = formatTime(currentGroup[currentGroup.length - 1] + 15);
           grouped.push(`${startTime} ~ ${endTime}`);
         } else {
           grouped.push(formatTime(currentGroup[0]));
         }
+        // 새 그룹 시작
         currentGroup = [sortedTimes[i]];
       }
     }
   
     // 마지막 그룹 처리
     if (currentGroup.length > 1) {
-      const startTime = formatTime(currentGroup[0]);
-      const endTime = formatTime(currentGroup[currentGroup.length - 1]);
-      grouped.push(`${startTime} ~ ${formatTime(endTime.split(':').map(Number)[0]*60 + endTime.split(':').map(Number)[1] + gap - 15)}`);
+        const startTime = formatTime(currentGroup[0]);
+        const endTime = formatTime(currentGroup[currentGroup.length - 1] + 15);
+        grouped.push(`${startTime} ~ ${endTime}`);
     } else if (currentGroup.length === 1) {
-      grouped.push(formatTime(currentGroup[0]));
+        grouped.push(formatTime(currentGroup[0]));
     }
   
     return grouped;
 };
-
 /**
  * Date 객체를 인자로 받아 해당 월을 반환합니다.
  * @param date - 정보를 가져올 Date 객체

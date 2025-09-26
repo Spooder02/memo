@@ -7,13 +7,13 @@ import DayBlock from '../components/DayBlock';
 import TimeSelectionButton from '../components/TimeSelectionButton';
 import { SmallDropdown } from '../components/SmallDropdown';
 import { DropdownButtonImage, DropdownContainer, DropdownText, GrayLineDiv } from './Mainpage';
-import { RegisterPlanDetails } from '../types/TimeSelectionObject';
+import { RegisterPlanDetails } from '../types/PlanFormat';
 import { formatTime, getWeekDates, groupAndFormatTimes, getWeekInfo } from '../utils/TimeUtils';
 import images from '../utils/ImportImages';
 import { availableChannelOptions, DropdownItemState, priorityOptions, timeDivOptions, timeFilterOptions } from '../types/Dropdown';
 import CheckModal from '../components/CheckModal';
 import WeekSelectorModal from '../components/WeekSelectorModal';
-import teamsData from '../assets/teams.json';
+import ConfirmationModal from '../components/ConfirmationModalProps';
 
 type Availability = {
     [dateKey: string]: {
@@ -21,7 +21,6 @@ type Availability = {
         details: Partial<RegisterPlanDetails>;
     }
 }
-
 type DropdownOptionsType = "timeDiv" | "timeFilter" | "selectedTime" | "priority" | "disclosureRange" | "availableChannel";
 
 const RegisterPlan: React.FC = () => {
@@ -36,6 +35,8 @@ const RegisterPlan: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isWeekModalOpen, setIsWeekModalOpen] = useState(false);
     const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [confirmData, setConfirmData] = useState<Availability | null>(null);
     
     const [dropdownStates, setDropdownStates] = useState<{[key in DropdownOptionsType]: DropdownItemState}>({
         timeDiv: { isOpen: false, options: timeDivOptions, selectedValue: timeDivOptions[0] },
@@ -60,7 +61,6 @@ const RegisterPlan: React.FC = () => {
                 ]);
                 
                 setAvailability(availRes.data);
-
                 const myTeamNames = teamsRes.data.map((team: any) => team.teamName);
                 setDropdownStates(prev => ({
                     ...prev,
@@ -81,8 +81,8 @@ const RegisterPlan: React.FC = () => {
         const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
         const currentTimes = availability[dateKey]?.times || [];
         const sortedTimes = [...currentTimes].sort((a, b) => a - b);
-        const timeGap = dropdownStates.timeFilter.selectedValue === '1시간마다' ? 60 : (dropdownStates.timeFilter.selectedValue === '30분마다' ? 30 : 15);
-        const formattedSelectedTimes = groupAndFormatTimes(sortedTimes, timeGap);
+
+        const formattedSelectedTimes = groupAndFormatTimes(sortedTimes);
         setDropdownStates(prev => ({
             ...prev,
             selectedTime: { ...prev.selectedTime, options: ["선택된 시간 전체", ...formattedSelectedTimes], selectedValue: "선택된 시간 전체" }
@@ -111,7 +111,19 @@ const RegisterPlan: React.FC = () => {
         const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
         
         const currentTimes = new Set(availability[dateKey]?.times || []);
-        currentTimes.has(time) ? currentTimes.delete(time) : currentTimes.add(time);
+        const timeFilter = dropdownStates.timeFilter.selectedValue;
+        const step = timeFilter === '1시간마다' ? 4 : (timeFilter === '30분마다' ? 2 : 1);
+        const isAdding = !currentTimes.has(time);
+
+        for (let i = 0; i < step; i++) {
+            const targetTime = time + (i * 15);
+            if (isAdding) {
+                currentTimes.add(targetTime);
+            } else {
+                currentTimes.delete(targetTime);
+            }
+        }
+        
         const newTimesArray = Array.from(currentTimes).sort((a,b) => a-b);
         
         setAvailability(prev => ({
@@ -130,6 +142,22 @@ const RegisterPlan: React.FC = () => {
         }));
     };
 
+    const handleReset = async () => {
+        if (window.confirm("정말로 모든 날짜의 가능 시간을 초기화하시겠습니까?")) {
+            try {
+                // 1. 서버에 빈 객체를 보내 데이터를 초기화합니다.
+                await apiClient.post('/availability', {});
+                // 2. 서버 요청 성공 시, 로컬 상태도 초기화합니다.
+                setAvailability({});
+                setSelectedDate(null);
+                alert("초기화되었습니다.");
+            } catch (error) {
+                console.error("Failed to reset availability:", error);
+                alert("초기화에 실패했습니다. 다시 시도해주세요.");
+            }
+        }
+    };
+
     const toggleDropdown = (dropdownKey: DropdownOptionsType) => {
         setDropdownStates(prev => {
             const isOpening = !prev[dropdownKey].isOpen;
@@ -138,11 +166,33 @@ const RegisterPlan: React.FC = () => {
         });
     };
 
-    const submitPlan = async () => {
+    const handleSubmitClick = () => {
+        if (!selectedDate) {
+            alert("[오류] 저장할 날짜를 선택해주세요!");
+            return;
+        }
+        
+        const dateKey = `${currentDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+        const currentDayData = availability[dateKey];
+
+        if (!currentDayData || currentDayData.times.length === 0) {
+            alert("[오류] 선택된 날짜에 등록할 시간이 없습니다!");
+            return;
+        }
+
+        const dataForConfirmation = { [dateKey]: currentDayData };
+        setConfirmData(dataForConfirmation); // 필터링된 데이터를 상태에 저장하여 모달을 엽니다.
+
+    };
+
+
+    const saveToServer = async () => {
         if (Object.keys(availability).length === 0) {
             alert("[오류] 등록할 일정을 선택하세요!");
             return;
         }
+
+        // 서버에는 전체 availability 객체를 전송
         try {
             if (isProposalMode) {
                 await apiClient.post(`/meetings/${meetingId}/proposals`, { availability });
@@ -156,6 +206,8 @@ const RegisterPlan: React.FC = () => {
         } catch (error) {
             console.error("Failed to save data:", error);
             alert("저장에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+            setConfirmData(null); // 모달 닫기
         }
     };
     
@@ -168,6 +220,12 @@ const RegisterPlan: React.FC = () => {
 
     return (
         <PageContainer>
+            <ConfirmationModal 
+                isOpen={confirmData !== null}
+                onClose={() => setConfirmData(null)}
+                onConfirm={saveToServer}
+                availability={confirmData || {}}
+            />
             <CheckModal title={isProposalMode ? '제출 완료' : '저장 완료'} desc={isProposalMode ? '미팅 가능 시간이 제출되었습니다.' : '일정이 저장되었습니다.'} isToggle={isCheckModalOpen} />
             <WeekSelectorModal isOpen={isWeekModalOpen} onClose={() => setIsWeekModalOpen(false)} currentDate={currentDate} onWeekSelect={(newDate) => {setCurrentDate(newDate); setIsWeekModalOpen(false);}} />
 
@@ -269,8 +327,8 @@ const RegisterPlan: React.FC = () => {
                 })}
 
                 <ButtonContainer>
-                    <ResetButton onClick={() => setAvailability({})}>전체 초기화</ResetButton>
-                    <SaveButton onClick={submitPlan}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
+                    <ResetButton onClick={handleReset}>전체 초기화</ResetButton>
+                    <SaveButton onClick={handleSubmitClick}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
                 </ButtonContainer>
             </OptionContainer>
         </PageContainer>
