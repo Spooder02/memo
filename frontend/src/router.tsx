@@ -12,6 +12,7 @@ import ConfirmMeetingPage from "./pages/ConfirmMeetingPage";
 import CreateMeetingPage from './pages/CreateMeetingPage';
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import AddTeamPage from "./pages/AddTeamPage";
 
 interface RouteElement {
     path?: string;
@@ -48,6 +49,7 @@ const routes: RouteElement[] = [
                     { path: 'myteam', element: <TeamPage/> },
                     { path: 'profile', element: <MyProfilePage/> },
                     { path: 'setProfile', element: <SetProfile/> },
+                    { path: 'add-team', element: <AddTeamPage/> },
                 ],
             }
         ]

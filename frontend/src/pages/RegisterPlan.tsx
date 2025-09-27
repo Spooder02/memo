@@ -60,7 +60,16 @@ const RegisterPlan: React.FC = () => {
                     apiClient.get('/teams')
                 ]);
                 
-                setAvailability(availRes.data);
+                // 서버에서 받은 데이터를 프론트엔드 상태 형식으로 변환
+                const formattedAvailability: Availability = {};
+                Object.entries(availRes.data).forEach(([dateKey, data]: [string, any]) => {
+                    formattedAvailability[dateKey] = {
+                        times: data.times || [],
+                        details: data.details || {}
+                    };
+                });
+                setAvailability(formattedAvailability);
+
                 const myTeamNames = teamsRes.data.map((team: any) => team.teamName);
                 setDropdownStates(prev => ({
                     ...prev,
@@ -142,22 +151,6 @@ const RegisterPlan: React.FC = () => {
         }));
     };
 
-    const handleReset = async () => {
-        if (window.confirm("정말로 모든 날짜의 가능 시간을 초기화하시겠습니까?")) {
-            try {
-                // 1. 서버에 빈 객체를 보내 데이터를 초기화합니다.
-                await apiClient.post('/availability', {});
-                // 2. 서버 요청 성공 시, 로컬 상태도 초기화합니다.
-                setAvailability({});
-                setSelectedDate(null);
-                alert("초기화되었습니다.");
-            } catch (error) {
-                console.error("Failed to reset availability:", error);
-                alert("초기화에 실패했습니다. 다시 시도해주세요.");
-            }
-        }
-    };
-
     const toggleDropdown = (dropdownKey: DropdownOptionsType) => {
         setDropdownStates(prev => {
             const isOpening = !prev[dropdownKey].isOpen;
@@ -185,29 +178,41 @@ const RegisterPlan: React.FC = () => {
 
     };
 
+    const submitPlan = async () => { // 확인 후, 변경사항이 있다면 확인 모달을 엽니다
 
-    const saveToServer = async () => {
-        if (Object.keys(availability).length === 0) {
+        const hasData = Object.values(availability).some(day => day.times.length > 0);
+        if (!hasData) {
             alert("[오류] 등록할 일정을 선택하세요!");
             return;
         }
+        setIsConfirmModalOpen(true);
+    };
 
-        // 서버에는 전체 availability 객체를 전송
+    const saveToServer = async () => {
+        setIsConfirmModalOpen(false);
         try {
-            if (isProposalMode) {
-                await apiClient.post(`/meetings/${meetingId}/proposals`, { availability });
-                alert("미팅 가능 시간이 제출되었습니다.");
-                navigate(`/myteam`);
-            } else {
-                await apiClient.post('/availability', availability);
-                setIsCheckModalOpen(true);
-                setTimeout(() => setIsCheckModalOpen(false), 3000);
-            }
+            // isProposalMode 로직은 현재 DB 구조와 맞지 않아 단순화/제외.
+            // 필요 시 별도 API로 구현해야 함.
+            await apiClient.post('/availability', availability);
+            setIsCheckModalOpen(true);
+            setTimeout(() => setIsCheckModalOpen(false), 3000);
         } catch (error) {
             console.error("Failed to save data:", error);
             alert("저장에 실패했습니다. 다시 시도해주세요.");
-        } finally {
-            setConfirmData(null); // 모달 닫기
+        }
+    };
+
+    const handleReset = async () => {
+        if (window.confirm("정말로 모든 날짜의 가능 시간을 초기화하시겠습니까?")) {
+            try {
+                await apiClient.post('/availability', {}); // 서버에 빈 객체를 보내 초기화
+                setAvailability({}); // 로컬 상태 초기화
+                setSelectedDate(null);
+                alert("초기화되었습니다.");
+            } catch (error) {
+                console.error("Failed to reset availability:", error);
+                alert("초기화에 실패했습니다. 다시 시도해주세요.");
+            }
         }
     };
     
@@ -328,7 +333,7 @@ const RegisterPlan: React.FC = () => {
 
                 <ButtonContainer>
                     <ResetButton onClick={handleReset}>전체 초기화</ResetButton>
-                    <SaveButton onClick={handleSubmitClick}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
+                    <SaveButton onClick={submitPlan}>{isProposalMode ? '제출하기' : '저장'}</SaveButton>
                 </ButtonContainer>
             </OptionContainer>
         </PageContainer>
